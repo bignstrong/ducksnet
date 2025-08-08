@@ -42,6 +42,10 @@ DEFAULT_SHOP_PAYMENT_YOOKASSA_ENABLED = False
 DEFAULT_SHOP_PAYMENT_YOOMONEY_ENABLED = False
 DEFAULT_DB_NAME = "bot_database"
 
+# Настройки изображений
+DEFAULT_MAIN_MENU_IMAGE_ENABLED = True
+DEFAULT_MAIN_MENU_IMAGE_NAME = "DucksNetMainMenu.png"
+
 DEFAULT_REDIS_DB_NAME = "0"
 DEFAULT_REDIS_HOST = "DucksNet-redis"
 DEFAULT_REDIS_PORT = 6379
@@ -90,6 +94,8 @@ class ShopConfig:
     PAYMENT_HELEKET_ENABLED: bool
     PAYMENT_YOOKASSA_ENABLED: bool
     PAYMENT_YOOMONEY_ENABLED: bool
+    MAIN_MENU_IMAGE_ENABLED: bool
+    MAIN_MENU_IMAGE_NAME: str
 
 
 @dataclass
@@ -268,6 +274,15 @@ def load_config() -> Config:
         )
         referrer_reward_enabled = False
 
+    main_menu_image_enabled = env.bool(
+        "SHOP_MAIN_MENU_IMAGE_ENABLED",
+        default=DEFAULT_MAIN_MENU_IMAGE_ENABLED,
+    )
+    main_menu_image_name = env.str(
+        "SHOP_MAIN_MENU_IMAGE_NAME",
+        default=DEFAULT_MAIN_MENU_IMAGE_NAME,
+    )
+
     return Config(
         bot=BotConfig(
             TOKEN=env.str("BOT_TOKEN"),
@@ -336,6 +351,8 @@ def load_config() -> Config:
             PAYMENT_HELEKET_ENABLED=payment_heleket_enabled,
             PAYMENT_YOOKASSA_ENABLED=payment_yookassa_enabled,
             PAYMENT_YOOMONEY_ENABLED=payment_yoomoney_enabled,
+            MAIN_MENU_IMAGE_ENABLED=main_menu_image_enabled,
+            MAIN_MENU_IMAGE_NAME=main_menu_image_name,
         ),
         xui=XUIConfig(
             USERNAME=env.str("XUI_USERNAME"),

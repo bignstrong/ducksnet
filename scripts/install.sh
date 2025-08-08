@@ -13,6 +13,8 @@ VERSION_FILE=".version"
 TMP_DIR="/tmp/DucksNet_update"
 BACKUP_DIR="/tmp/DucksNet_backup"
 TRANSLATIONS_DIR="app/locales"
+# Ветка всегда master, ссылки только с master
+BRANCH_NAME="master"
 
 find_project_root() {
     local current_dir="$1"
@@ -110,7 +112,7 @@ get_current_version() {
 
 get_latest_version() {
     curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest" |
-        grep -oP '"tag_name": "\K(.*)(?=")'
+        grep -oP '"tag_name": "\\K(.*)(?=")'
 }
 
 download_and_extract_release() {
