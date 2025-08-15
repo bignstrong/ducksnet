@@ -1,11 +1,11 @@
 <div align="center" markdown>
 
 <p align="center">
-    <a href="https://github.com/bignstrong/DucksNet/blob/main/README.md"><u><b>ENGLISH</b></u></a> •
-    <a href="https://github.com/bignstrong/DucksNet/blob/main/README.ru_RU.md"><u><b>РУССКИЙ</b></u></a>
+    <a href="https://github.com/bignstrong/ducksnet/blob/main/README.md"><u><b>ENGLISH</b></u></a> •
+    <a href="https://github.com/bignstrong/ducksnet/blob/main/README.ru_RU.md"><u><b>РУССКИЙ</b></u></a>
 </p>
 
-![DucksNet](https://github.com/user-attachments/assets/282d10db-a355-4c65-a2cf-eb0e8ec8eed1)
+![ducksnet](https://github.com/user-attachments/assets/282d10db-a355-4c65-a2cf-eb0e8ec8eed1)
 
 **Этот проект представляет собой Telegram-бота для продажи подписок на VPN. Работает с 3X-UI.**
 
@@ -16,14 +16,14 @@
     <a href="#support-the-project">Поддержка проекта</a>
 </p>
 
-![GitHub License](https://img.shields.io/github/license/bignstrong/DucksNet)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/bignstrong/DucksNet/total)
-![GitHub Release](https://img.shields.io/github/v/release/bignstrong/DucksNet)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/bignstrong/DucksNet)
+![GitHub License](https://img.shields.io/github/license/bignstrong/ducksnet)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/bignstrong/ducksnet/total)
+![GitHub Release](https://img.shields.io/github/v/release/bignstrong/ducksnet)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/bignstrong/ducksnet)
 
 [![Static Badge](https://img.shields.io/badge/public_channel-white?style=social&logo=Telegram&logoColor=blue&logoSize=auto&labelColor=white&link=https%3A%2F%2Ft.me%2Fsn0ups)](https://t.me/sn0ups)
 [![Static Badge](https://img.shields.io/badge/contact_me-white?style=social&logo=Telegram&logoColor=blue&logoSize=auto&labelColor=white&link=https%3A%2F%2Ft.me%2Fbignstrong)](https://t.me/bignstrong)
-![GitHub Repo stars](https://img.shields.io/github/stars/bignstrong/DucksNet)
+![GitHub Repo stars](https://img.shields.io/github/stars/bignstrong/ducksnet)
 
 </div>
 
@@ -109,8 +109,8 @@
 1. **Установка/Обновление:**
 
    ```bash
-   bash <(curl -Ls https://raw.githubusercontent.com/bignstrong/DucksNet/refs/heads/main/scripts/install.sh) -q
-   cd DucksNet
+   bash <(curl -Ls https://raw.githubusercontent.com/bignstrong/ducksnet/refs/heads/main/scripts/install.sh) -q
+   cd ducksnet
    ```
 
 2. **Настройка переменных окружения и планов:**
@@ -147,10 +147,10 @@
 | BOT_ADMINS                     | ⭕        | -                                                       | Список ID администраторов (например, 123456789,987654321)                                                   |
 | BOT_DEV_ID                     | 🔴        | -                                                       | ID разработчика бота                                                                                        |
 | BOT_SUPPORT_ID                 | 🔴        | -                                                       | ID пользователя, отвечающего за поддержку                                                                   |
-| BOT_DOMAIN                     | 🔴        | -                                                       | Домен вашего бота (например, DucksNet.com)                                                                  |
+| BOT_DOMAIN                     | 🔴        | -                                                       | Домен вашего бота (например, ducksnet.com)                                                                  |
 | BOT_PORT                       | ⭕        | 8080                                                    | Порт, используемый ботом                                                                                    |
 |                                |           |                                                         |
-| SHOP_EMAIL                     | ⭕        | support@DucksNet.com                                    | Email для отправки чеков                                                                                    |
+| SHOP_EMAIL                     | ⭕        | support@ducksnet.com                                    | Email для отправки чеков                                                                                    |
 | SHOP_CURRENCY                  | ⭕        | RUB                                                     | Валюта для кнопок (например, RUB, USD, XTR)                                                                 |
 | SHOP_TRIAL_ENABLED             | ⭕        | True                                                    | Включить пробную подписку для новых пользователей                                                           |
 | SHOP_TRIAL_PERIOD              | ⭕        | 3                                                       | Продолжительность пробной подписки в днях                                                                   |
@@ -233,7 +233,7 @@
 1. **Настройка Webhook:**
 
    - Перейдите на страницу [HTTP Уведомления](https://yookassa.ru/my/merchant/integration/http-notifications).
-   - Введите домен бота в URL для уведомлений, должен заканчиваться на `/yookassa` (например, `https://DucksNet.com/yookassa`).
+   - Введите домен бота в URL для уведомлений, должен заканчиваться на `/yookassa` (например, `https://ducksnet.com/yookassa`).
    - Выберите следующие события::
      - `payment.succeeded`
      - `payment.waiting_for_capture`

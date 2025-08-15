@@ -1,6 +1,6 @@
-# 🚀 Автоматический деплой DucksNet
+# 🚀 Автоматический деплой ducksnet
 
-Этот документ описывает, как настроить автоматический деплой вашего Telegram бота DucksNet на сервер через GitHub Actions.
+Этот документ описывает, как настроить автоматический деплой вашего Telegram бота ducksnet на сервер через GitHub Actions.
 
 ## 📋 Требования
 
@@ -17,7 +17,7 @@
 
 ```bash
 # Скачайте скрипт
-curl -O https://raw.githubusercontent.com/your-username/DucksNet/main/scripts/setup_server.sh
+curl -O https://raw.githubusercontent.com/your-username/ducksnet/main/scripts/setup_server.sh
 
 # Сделайте исполняемым
 chmod +x setup_server.sh
@@ -107,7 +107,7 @@ echo -n 'admin:password' | base64
 
 ```bash
 cd /opt/ducksnet
-git clone https://github.com/your-username/DucksNet.git .
+git clone https://github.com/your-username/ducksnet.git .
 ```
 
 ### 2. Настройте .env файл

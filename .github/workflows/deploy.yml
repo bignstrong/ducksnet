@@ -90,7 +90,7 @@ jobs:
             echo "🚀 Starting deployment..."
 
             # Переход в директорию проекта
-            cd /opt/DucksNet
+            cd /opt/ducksnet
 
             # Остановка текущих контейнеров
             echo "⏹️ Stopping containers..."
@@ -137,7 +137,7 @@ jobs:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
-            🚀 DucksNet Deployment
+            🚀 ducksnet Deployment
 
             Status: ${{ job.status }}
             Environment: ${{ github.event.inputs.environment || 'production' }}

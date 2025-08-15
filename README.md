@@ -1,4 +1,4 @@
-# 🦆 DucksNet - Telegram Bot для VPN подписок
+# 🦆 ducksnet - Telegram Bot для VPN подписок
 
 Telegram бот для продажи VPN подписок с интеграцией 3X-UI панели и множественными платежными системами.
 
@@ -20,8 +20,8 @@ Telegram бот для продажи VPN подписок с интеграци
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/your-username/DucksNet.git
-cd DucksNet
+git clone https://github.com/your-username/ducksnet.git
+cd ducksnet
 ```
 
 ### 2. Настройка переменных окружения
@@ -57,6 +57,7 @@ poetry run python app/__main__.py
 ### Настройка GitHub Actions
 
 1. **Добавьте секреты в GitHub:**
+
    - `SERVER_HOST` - IP адрес вашего сервера
    - `SERVER_USER` - имя пользователя для SSH
    - `SERVER_SSH_KEY` - приватный SSH ключ
@@ -68,9 +69,9 @@ poetry run python app/__main__.py
 
 ### Настройка сервера
 
-   ```bash
+```bash
 # Автоматическая настройка
-curl -O https://raw.githubusercontent.com/your-username/DucksNet/main/scripts/setup_server.sh
+curl -O https://raw.githubusercontent.com/your-username/ducksnet/main/scripts/setup_server.sh
 chmod +x setup_server.sh
 sudo ./setup_server.sh
 
@@ -84,10 +85,10 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ### Первый деплой
 
-  ```bash
+```bash
 # На сервере
 cd /opt/ducksnet
-git clone https://github.com/your-username/DucksNet.git .
+git clone https://github.com/your-username/ducksnet.git .
 # Настройте .env файл
 sudo systemctl start ducksnet
 sudo systemctl enable ducksnet
@@ -96,7 +97,7 @@ sudo systemctl enable ducksnet
 ## 📁 Структура проекта
 
 ```
-DucksNet/
+ducksnet/
 ├── app/                    # Основной код приложения
 │   ├── bot/               # Telegram бот
 │   ├── routers/           # Обработчики команд
@@ -114,7 +115,7 @@ DucksNet/
 
 ### Основные настройки в .env:
 
-   ```bash
+```bash
 # Bot Configuration
 BOT_TOKEN=your_telegram_bot_token
 BOT_DOMAIN=your-domain.com
@@ -158,11 +159,13 @@ YOOKASSA_SECRET_KEY=your_secret_key
 ## 🔍 Мониторинг
 
 ### Traefik Dashboard:
+
 - URL: `https://traefik.your-domain.com`
 - Логин: `admin`
 - Пароль: указанный в `.env`
 
 ### Логи:
+
 ```bash
 # Логи бота
 docker-compose logs -f bot
@@ -202,18 +205,21 @@ poetry run alembic upgrade head
 ## 🚨 Устранение неполадок
 
 ### Проблемы с Docker:
+
 ```bash
 docker system prune -a -f
 sudo systemctl restart docker
 ```
 
 ### Проблемы с базой данных:
+
 ```bash
 docker-compose exec bot alembic upgrade head
 docker-compose exec bot alembic current
 ```
 
 ### Проблемы с SSL:
+
 ```bash
 docker-compose logs traefik
 docker-compose exec traefik traefik version

@@ -14,10 +14,10 @@ jobs:
       - name: Generate source archive
         run: |
           mkdir -p dist
-          git archive --format=tar.gz --output=dist/DucksNet-${{ github.ref_name }}.tar.gz ${{ github.ref }}
+          git archive --format=tar.gz --output=dist/ducksnet-${{ github.ref_name }}.tar.gz ${{ github.ref }}
 
       - name: Upload archive to release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/DucksNet-${{ github.ref_name }}.tar.gz
+          files: dist/ducksnet-${{ github.ref_name }}.tar.gz
           token: ${{ secrets.GITHUB_TOKEN }}

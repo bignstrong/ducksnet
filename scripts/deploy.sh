@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Скрипт для быстрого деплоя DucksNet
+# Скрипт для быстрого деплоя ducksnet
 set -e
 
 # Цвета для вывода
@@ -211,6 +211,6 @@ if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
     log "📱 Отправка уведомления в Telegram..."
     curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
         -d "chat_id=$TELEGRAM_CHAT_ID" \
-        -d "text=🚀 DucksNet успешно развернут в $ENVIRONMENT!%0A✅ Статус: Работает%0A🌐 Домен: $(grep BOT_DOMAIN .env | cut -d'=' -f2)" \
+        -d "text=🚀 ducksnet успешно развернут в $ENVIRONMENT!%0A✅ Статус: Работает%0A🌐 Домен: $(grep BOT_DOMAIN .env | cut -d'=' -f2)" \
         -d "parse_mode=HTML" > /dev/null 2>&1 || warning "Не удалось отправить уведомление"
 fi

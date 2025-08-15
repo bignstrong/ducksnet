@@ -1,10 +1,10 @@
-# 🔑 Настройка GitHub Actions для DucksNet
+# 🔑 Настройка GitHub Actions для ducksnet
 
 Этот документ описывает, как настроить автоматический деплой через GitHub Actions.
 
 ## 📋 Предварительные требования
 
-1. ✅ GitHub репозиторий с кодом DucksNet
+1. ✅ GitHub репозиторий с кодом ducksnet
 2. ✅ VPS сервер с Ubuntu/Debian
 3. ✅ SSH доступ к серверу
 4. ✅ Домен с настроенными DNS записями
@@ -149,7 +149,7 @@ sudo su - ducksnet
 cd /opt/ducksnet
 
 # Клонируйте репозиторий
-git clone https://github.com/your-username/DucksNet.git .
+git clone https://github.com/your-username/ducksnet.git .
 ```
 
 ### 2. Настройка переменных окружения
@@ -199,7 +199,7 @@ sudo nano /etc/systemd/system/ducksnet.service
 
 ```ini
 [Unit]
-Description=DucksNet Bot
+Description=ducksnet Bot
 Requires=docker.service
 After=docker.service
 

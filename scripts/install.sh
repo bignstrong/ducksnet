@@ -2,16 +2,16 @@
 
 # install.sh
 # ─────────────────────────────────────────────────────────────────────────────
-# Script for installing DucksNet
+# Script for installing ducksnet
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -e
 
 REPO_OWNER="bignstrong"
-REPO_NAME="DucksNet"
+REPO_NAME="ducksnet"
 VERSION_FILE=".version"
-TMP_DIR="/tmp/DucksNet_update"
-BACKUP_DIR="/tmp/DucksNet_backup"
+TMP_DIR="/tmp/ducksnet_update"
+BACKUP_DIR="/tmp/ducksnet_backup"
 TRANSLATIONS_DIR="app/locales"
 # Ветка всегда main, ссылки только с main
 BRANCH_NAME="main"

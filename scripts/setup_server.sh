@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Скрипт для настройки сервера DucksNet
+# Скрипт для настройки сервера ducksnet
 set -e
 
-echo "🚀 Настройка сервера DucksNet..."
+echo "🚀 Настройка сервера ducksnet..."
 
 # Проверка на root права
 if [ "$EUID" -ne 0 ]; then
@@ -94,7 +94,7 @@ chmod 600 /opt/ducpsnet/.env
 echo "🔄 Создание systemd сервиса..."
 cat > /etc/systemd/system/ducksnet.service << 'EOF'
 [Unit]
-Description=DucksNet Bot
+Description=ducksnet Bot
 Requires=docker.service
 After=docker.service
 
