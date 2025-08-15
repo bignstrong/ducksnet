@@ -101,10 +101,16 @@ jobs:
             git fetch origin
             git reset --hard origin/main
 
-            # Обновление переменных окружения
-            echo "⚙️ Updating environment..."
-            if [ -f .env.backup ]; then
-              cp .env.backup .env
+            # Создание .env если не существует
+            echo "⚙️ Checking environment files..."
+            if [ ! -f .env ]; then
+              cp env.example .env
+              echo "⚠️ Created .env from example - please configure it!"
+            fi
+
+            # Создание plans.json если не существует
+            if [ ! -f plans.json ]; then
+              cp plans.example.json plans.json 2>/dev/null || echo '{"durations": [30, 60, 180, 365], "plans": [{"devices": 1, "prices": {"RUB": {"30": 100, "60": 180, "180": 450, "365": 800}}}]}' > plans.json
             fi
 
             # Запуск контейнеров
@@ -124,26 +130,3 @@ jobs:
             docker system prune -f
 
             echo "✅ Deployment completed successfully!"
-
-      - name: Health check
-        run: |
-          echo "🔍 Performing health check..."
-          sleep 60
-
-      - name: Notify deployment status
-        if: always()
-        uses: appleboy/telegram-action@v1.0.0
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            🚀 ducksnet Deployment
-
-            Status: ${{ job.status }}
-            Environment: ${{ github.event.inputs.environment || 'production' }}
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
-
-            ${{ job.status == 'success' && '✅ Deployment successful!' || '❌ Deployment failed!' }}
-
-            View logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
