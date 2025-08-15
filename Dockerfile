@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye as builder
+FROM python:3.12-slim-bullseye AS builder
 
 # Установка системных зависимостей
 RUN apt-get update && apt-get install -y \
@@ -14,7 +14,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Установка зависимостей
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev --no-interaction --no-ansi
+    && poetry install --only=main --no-interaction --no-ansi
 
 # Финальный образ
 FROM python:3.12-slim-bullseye
