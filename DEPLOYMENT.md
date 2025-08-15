@@ -90,12 +90,14 @@ echo -n 'admin:password' | base64
 В настройках вашего GitHub репозитория (`Settings` → `Secrets and variables` → `Actions`) добавьте:
 
 ### Обязательные секреты:
+
 - `SERVER_HOST` - IP адрес или домен вашего сервера
 - `SERVER_USER` - имя пользователя для SSH (обычно `ducksnet`)
 - `SERVER_SSH_KEY` - приватный SSH ключ для доступа к серверу
 - `SERVER_PORT` - SSH порт (обычно `22`)
 
 ### Дополнительные секреты:
+
 - `TELEGRAM_BOT_TOKEN` - токен бота для уведомлений
 - `TELEGRAM_CHAT_ID` - ID чата для уведомлений
 
@@ -144,11 +146,13 @@ docker-compose ps
 ## 🔍 Мониторинг
 
 ### Traefik Dashboard:
+
 - URL: `https://traefik.your-domain.com`
 - Логин: `admin`
 - Пароль: указанный в `.env`
 
 ### Логи сервисов:
+
 ```bash
 # Логи бота
 docker-compose logs -f bot
@@ -161,6 +165,7 @@ docker-compose logs -f redis
 ```
 
 ### Статус сервисов:
+
 ```bash
 docker-compose ps
 sudo systemctl status ducksnet
@@ -169,9 +174,11 @@ sudo systemctl status ducksnet
 ## 🛠️ Обновление
 
 ### Автоматическое (через GitHub Actions):
+
 - Просто сделайте push в ветку `main`
 
 ### Ручное обновление:
+
 ```bash
 cd /opt/ducksnet
 ./update.sh
@@ -180,6 +187,7 @@ cd /opt/ducksnet
 ## 🚨 Устранение неполадок
 
 ### Проблемы с Docker:
+
 ```bash
 # Перезапуск Docker
 sudo systemctl restart docker
@@ -189,6 +197,7 @@ docker system prune -a -f
 ```
 
 ### Проблемы с Traefik:
+
 ```bash
 # Проверка конфигурации
 docker-compose exec traefik traefik version
@@ -198,6 +207,7 @@ docker-compose logs traefik
 ```
 
 ### Проблемы с базой данных:
+
 ```bash
 # Запуск миграций
 docker-compose exec bot alembic upgrade head
