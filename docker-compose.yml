@@ -1,60 +1,82 @@
+version: '3.8'
+
 services:
   traefik:
     image: 'traefik:v3.0'
-    container_name: 'traefik'
+    container_name: 'ducksnet-traefik'
     restart: always
     ports:
       - '80:80'
       - '443:443'
+      - '8080:8080'  # Dashboard
     env_file:
       - .env
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
       - 'letsencrypt_data:/letsencrypt'
+      - './traefik.yml:/etc/traefik/traefik.yml:ro'
     command:
-      - '--entrypoints.web.address=:80'
-      - '--entrypoints.websecure.address=:443'
-      - '--providers.docker=true'
-      - '--providers.docker.exposedbydefault=false'
-      - '--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}'
-      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
-      - '--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web'
-      - '--log.level=INFO'
+      - '--configfile=/etc/traefik/traefik.yml'
     labels:
       - 'traefik.enable=true'
+      - 'traefik.http.routers.dashboard.rule=Host(`traefik.${BOT_DOMAIN}`)'
+      - 'traefik.http.routers.dashboard.entrypoints=websecure'
+      - 'traefik.http.routers.dashboard.tls.certresolver=letsencrypt'
+      - 'traefik.http.routers.dashboard.service=api@internal'
+      - 'traefik.http.routers.dashboard.middlewares=auth'
+      - 'traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH}'
 
   redis:
-    image: redis:latest
-    container_name: DucksNet-redis
+    image: redis:7-alpine
+    container_name: ducksnet-redis
     restart: always
     volumes:
       - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   bot:
-    build: .
-    container_name: DucksNet-bot
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: ducksnet-bot
+    restart: unless-stopped
     volumes:
       - ./app/data:/app/data
       - ./plans.json:/app/data/plans.json
       - ./app/locales:/app/locales
       - ./app/logs:/app/logs
+      - ./app/db:/app/db
     env_file:
       - .env
-    stop_signal: SIGINT
-    restart: unless-stopped
-    command: sh -c "
-      poetry run pybabel compile -d /app/locales -D bot &&
-      poetry run alembic -c /app/db/alembic.ini upgrade head &&
-      poetry run python /app/__main__.py"
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     labels:
       - 'traefik.enable=true'
       - 'traefik.http.routers.bot.rule=Host(`${BOT_DOMAIN}`)'
       - 'traefik.http.routers.bot.entrypoints=websecure'
       - 'traefik.http.routers.bot.tls.certresolver=letsencrypt'
       - 'traefik.http.services.bot.loadbalancer.server.port=8080'
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   redis_data:
+    driver: local
   letsencrypt_data:
+    driver: local
+
+networks:
+  default:
+    name: ducksnet-network

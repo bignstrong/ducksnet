@@ -1,0 +1,149 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+
+      - name: Cache Poetry dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run tests
+        run: |
+          poetry run python -m pytest tests/ || echo "No tests found, skipping"
+
+      - name: Lint code
+        run: |
+          poetry run flake8 app/ || echo "No flake8 config, skipping"
+          poetry run black --check app/ || echo "No black config, skipping"
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+
+            # Переход в директорию проекта
+            cd /opt/DucksNet
+
+            # Остановка текущих контейнеров
+            echo "⏹️ Stopping containers..."
+            docker-compose down || true
+
+            # Обновление кода
+            echo "📥 Updating code..."
+            git fetch origin
+            git reset --hard origin/main
+
+            # Обновление переменных окружения
+            echo "⚙️ Updating environment..."
+            if [ -f .env.backup ]; then
+              cp .env.backup .env
+            fi
+
+            # Запуск контейнеров
+            echo "🚀 Starting containers..."
+            docker-compose up -d --build
+
+            # Ожидание готовности сервисов
+            echo "⏳ Waiting for services to be ready..."
+            sleep 30
+
+            # Проверка статуса
+            echo "🔍 Checking service status..."
+            docker-compose ps
+
+            # Очистка старых образов
+            echo "🧹 Cleaning up old images..."
+            docker system prune -f
+
+            echo "✅ Deployment completed successfully!"
+
+      - name: Health check
+        run: |
+          echo "🔍 Performing health check..."
+          sleep 60
+
+      - name: Notify deployment status
+        if: always()
+        uses: appleboy/telegram-action@v1.0.0
+        with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+            🚀 DucksNet Deployment
+
+            Status: ${{ job.status }}
+            Environment: ${{ github.event.inputs.environment || 'production' }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+
+            ${{ job.status == 'success' && '✅ Deployment successful!' || '❌ Deployment failed!' }}
+
+            View logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

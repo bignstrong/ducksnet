@@ -13,8 +13,8 @@ VERSION_FILE=".version"
 TMP_DIR="/tmp/DucksNet_update"
 BACKUP_DIR="/tmp/DucksNet_backup"
 TRANSLATIONS_DIR="app/locales"
-# Ветка всегда master, ссылки только с master
-BRANCH_NAME="master"
+# Ветка всегда main, ссылки только с main
+BRANCH_NAME="main"
 
 find_project_root() {
     local current_dir="$1"
