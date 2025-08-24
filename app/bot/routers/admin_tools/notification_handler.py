@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
@@ -41,12 +42,15 @@ class NotificationStates(StatesGroup):
 async def show_notification_main(message: Message, state: FSMContext) -> None:
     await state.set_state(None)
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-    await message.bot.edit_message_text(
-        text=_("notification:message:main"),
-        chat_id=message.chat.id,
-        message_id=main_message_id,
-        reply_markup=notification_keyboard(),
-    )
+    try:
+        await message.bot.edit_message_text(
+            text=_("notification:message:main"),
+            chat_id=message.chat.id,
+            message_id=main_message_id,
+            reply_markup=notification_keyboard(),
+        )
+    except TelegramBadRequest:
+        pass
 
 
 @router.callback_query(F.data == NavAdminTools.NOTIFICATION, IsAdmin())
@@ -66,10 +70,13 @@ async def callback_send_notification_user(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification to user.")
-    await callback.message.edit_text(
-        text=_("notification:message:send_to_user"),
-        reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("notification:message:send_to_user"),
+            reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
     await state.set_state(NotificationStates.user_id)
 
 
@@ -94,15 +101,18 @@ async def message_user_id(
             await state.update_data({NOTIFICATION_CHAT_IDS_KEY: [user_id]})
             main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
             await state.set_state(NotificationStates.message_to_user)
-            await message.bot.edit_message_text(
-                text=_("notification:message:send_message_for_user").format(
-                    user_id=user_id,
-                    first_name=user.first_name,
-                ),
-                chat_id=message.chat.id,
-                message_id=main_message_id,
-                reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
-            )
+            try:
+                await message.bot.edit_message_text(
+                    text=_("notification:message:send_message_for_user").format(
+                        user_id=user_id,
+                        first_name=user.first_name,
+                    ),
+                    chat_id=message.chat.id,
+                    message_id=main_message_id,
+                    reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
+                )
+            except TelegramBadRequest:
+                pass
         else:
             await services.notification.notify_by_message(
                 message=message,
@@ -132,12 +142,15 @@ async def message_to_user(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=confirm_send_notification_keyboard(),
-        )
+        try:
+            await message.bot.edit_message_text(
+                text=_("notification:message:confirm_send_notification").format(text=text),
+                chat_id=message.chat.id,
+                message_id=main_message_id,
+                reply_markup=confirm_send_notification_keyboard(),
+            )
+        except TelegramBadRequest:
+            pass
     else:
         await services.notification.notify_by_message(
             message=message,
@@ -195,10 +208,13 @@ async def callback_send_notification_all(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification to all.")
-    await callback.message.edit_text(
-        text=_("notification:message:send_to_all"),
-        reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("notification:message:send_to_all"),
+            reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
     await state.set_state(NotificationStates.message_to_all)
 
 
@@ -216,12 +232,15 @@ async def message_to_all(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=confirm_send_notification_keyboard(),
-        )
+        try:
+            await message.bot.edit_message_text(
+                text=_("notification:message:confirm_send_notification").format(text=text),
+                chat_id=message.chat.id,
+                message_id=main_message_id,
+                reply_markup=confirm_send_notification_keyboard(),
+            )
+        except TelegramBadRequest:
+            pass
     else:
         await services.notification.notify_by_message(
             message=message,
@@ -296,13 +315,16 @@ async def callback_last_notification(
     user_ids = await state.get_value(NOTIFICATION_CHAT_IDS_KEY)
     message_text = await state.get_value(NOTIFICATION_MESSAGE_TEXT_KEY)
     if user_ids and len(user_ids) > 0:
-        await callback.message.edit_text(
-            text=_("notification:message:last_notification").format(
-                message_count=len(user_ids),
-                message_text=message_text,
-            ),
-            reply_markup=last_notification_keyboard(),
-        )
+        try:
+            await callback.message.edit_text(
+                text=_("notification:message:last_notification").format(
+                    message_count=len(user_ids),
+                    message_text=message_text,
+                ),
+                reply_markup=last_notification_keyboard(),
+            )
+        except TelegramBadRequest:
+            await callback.answer()
     else:
         await services.notification.notify_by_message(
             message=callback.message,
@@ -318,10 +340,13 @@ async def callback_edit_notification(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened edit notification.")
-    await callback.message.edit_text(
-        text=_("notification:message:edit_notification"),
-        reply_markup=back_keyboard(NavAdminTools.LAST_NOTIFICATION),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("notification:message:edit_notification"),
+            reply_markup=back_keyboard(NavAdminTools.LAST_NOTIFICATION),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
     await state.set_state(NotificationStates.message_edit)
 
 
@@ -338,12 +363,15 @@ async def message_edit(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=confirm_send_notification_keyboard(),
-        )
+        try:
+            await message.bot.edit_message_text(
+                text=_("notification:message:confirm_send_notification").format(text=text),
+                chat_id=message.chat.id,
+                message_id=main_message_id,
+                reply_markup=confirm_send_notification_keyboard(),
+            )
+        except TelegramBadRequest:
+            pass
     else:
         await services.notification.notify_by_message(
             message=message,
@@ -393,12 +421,15 @@ async def callback_confirm_edit_notification(
         for chat_id, last_message_id in zip(chat_ids, last_message_ids):
 
             try:
-                edited = await callback.message.bot.edit_message_text(
-                    text=text,
-                    chat_id=chat_id,
-                    message_id=last_message_id,
-                    reply_markup=close_notification_keyboard(),
-                )
+                try:
+                    edited = await callback.message.bot.edit_message_text(
+                        text=text,
+                        chat_id=chat_id,
+                        message_id=last_message_id,
+                        reply_markup=close_notification_keyboard(),
+                    )
+                except TelegramBadRequest:
+                    pass
 
                 if edited:
                     success += 1

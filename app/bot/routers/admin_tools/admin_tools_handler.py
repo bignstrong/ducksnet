@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
@@ -19,10 +20,13 @@ router = Router(name=__name__)
 async def callback_admin_tools(callback: CallbackQuery, user: User) -> None:
     logger.info(f"Admin {user.tg_id} opened admin tools.")
     is_dev = await IsDev()(user_id=user.tg_id)
-    await callback.message.edit_text(
-        text=_("admin_tools:message:main"),
-        reply_markup=admin_tools_keyboard(is_dev),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("admin_tools:message:main"),
+            reply_markup=admin_tools_keyboard(is_dev),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 from sqlalchemy.ext.asyncio import AsyncSession

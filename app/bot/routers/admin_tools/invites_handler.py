@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
@@ -34,10 +35,13 @@ class CreateInviteStates(StatesGroup):
 async def callback_invite_editor(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened invite editor.")
     await state.set_state(None)
-    await callback.message.edit_text(
-        text=_("invite_editor:message:main"),
-        reply_markup=invite_editor_keyboard(),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("invite_editor:message:main"),
+            reply_markup=invite_editor_keyboard(),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 @router.callback_query(F.data == NavAdminTools.CREATE_INVITE, IsAdmin())
@@ -46,10 +50,13 @@ async def callback_create_invite(callback: CallbackQuery, user: User, state: FSM
     await state.set_state(CreateInviteStates.invite_input)
     await state.update_data({MAIN_MESSAGE_ID_KEY: callback.message.message_id})
 
-    await callback.message.edit_text(
-        text=_("invite_editor:message:enter_name"),
-        reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("invite_editor:message:enter_name"),
+            reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 @router.message(CreateInviteStates.invite_input, IsAdmin())
@@ -73,14 +80,17 @@ async def handle_invite_input(
 
         await state.set_state(None)
 
-        await message.bot.edit_message_text(
-            text=_("invite_editor:message:created_success").format(
-                name=invite_name, link=invite_link
-            ),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
-        )
+        try:
+            await message.bot.edit_message_text(
+                text=_("invite_editor:message:created_success").format(
+                    name=invite_name, link=invite_link
+                ),
+                chat_id=message.chat.id,
+                message_id=main_message_id,
+                reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
+            )
+        except TelegramBadRequest:
+            pass
     except Exception as e:
         logger.error(f"Error creating invite: {e}")
         await services.notification.notify_by_message(
@@ -99,15 +109,21 @@ async def callback_list_invites(
     invites = await Invite.get_all(session=session)
 
     if invites:
-        await callback.message.edit_text(
-            text=_("invite_editor:message:list"),
-            reply_markup=invite_list_keyboard(invites),
-        )
+        try:
+            await callback.message.edit_text(
+                text=_("invite_editor:message:list"),
+                reply_markup=invite_list_keyboard(invites),
+            )
+        except TelegramBadRequest:
+            await callback.answer()
     else:
-        await callback.message.edit_text(
-            text=_("invite_editor:message:no_invites"),
-            reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
-        )
+        try:
+            await callback.message.edit_text(
+                text=_("invite_editor:message:no_invites"),
+                reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
+            )
+        except TelegramBadRequest:
+            await callback.answer()
 
 
 @router.callback_query(F.data.startswith(NavAdminTools.SHOW_INVITE_PAGE), IsAdmin())
@@ -117,10 +133,13 @@ async def callback_invite_page(callback: CallbackQuery, user: User, session: Asy
 
     logger.info(f"Admin {user.tg_id} is now on page #{page + 1} of invites.")
 
-    await callback.message.edit_text(
-        text=_("invite_editor:message:list"),
-        reply_markup=invite_list_keyboard(invites, page=page),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("invite_editor:message:list"),
+            reply_markup=invite_list_keyboard(invites, page=page),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 @router.callback_query(F.data.startswith(NavAdminTools.SHOW_INVITE_DETAILS), IsAdmin())
@@ -177,21 +196,24 @@ async def callback_invite_details(
     else:
         revenue_text = "• " + _("invite_editor:revenue:none")
 
-    await callback.message.edit_text(
-        text=_("invite_editor:message:details").format(
-            name=invite.name,
-            link=invite_link,
-            clicks=invite.clicks,
-            created_at=invite.created_at.strftime("%Y-%m-%d %H:%M"),
-            status=status,
-            revenue_text=revenue_text,
-            users_count=stats.users_count,
-            trial_users_count=stats.trial_users_count,
-            paid_users_count=stats.paid_users_count,
-            repeat_customers_count=stats.repeat_customers_count,
-        ),
-        reply_markup=invite_details_keyboard(invite),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("invite_editor:message:details").format(
+                name=invite.name,
+                link=invite_link,
+                clicks=invite.clicks,
+                created_at=invite.created_at.strftime("%Y-%m-%d %H:%M"),
+                status=status,
+                revenue_text=revenue_text,
+                users_count=stats.users_count,
+                trial_users_count=stats.trial_users_count,
+                paid_users_count=stats.paid_users_count,
+                repeat_customers_count=stats.repeat_customers_count,
+            ),
+            reply_markup=invite_details_keyboard(invite),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 @router.callback_query(F.data.startswith(NavAdminTools.TOGGLE_INVITE_STATUS), IsAdmin())
@@ -258,10 +280,13 @@ async def callback_delete_invite_prompt(
 
     logger.info(f"Admin {user.tg_id} confirmed deletion of invite {invite_name}.")
 
-    await callback.message.edit_text(
-        text=_("invite_editor:message:confirm_delete").format(name=invite.name),
-        reply_markup=confirm_delete_invite_keyboard(invite_id),
-    )
+    try:
+        await callback.message.edit_text(
+            text=_("invite_editor:message:confirm_delete").format(name=invite.name),
+            reply_markup=confirm_delete_invite_keyboard(invite_id),
+        )
+    except TelegramBadRequest:
+        await callback.answer()
 
 
 @router.callback_query(F.data.startswith(NavAdminTools.DELETE_INVITE), IsAdmin())
