@@ -85,30 +85,14 @@ async def send_main_menu_with_image(
     config: Config,
 ) -> Message:
     """Отправляет главное меню с изображением, если оно существует"""
-    try:
-        if config.shop.MAIN_MENU_IMAGE_ENABLED and get_main_menu_image_path(config).exists():
-            # Отправляем изображение с подписью
-            photo = FSInputFile(get_main_menu_image_path(config))
-            main_menu = await message.answer_photo(
-                photo=photo,
-                caption=text,
-                reply_markup=reply_markup,
-            )
-            logger.debug(f"Main menu with image sent to user {user_id}")
-        else:
-            # Отправляем только текст, если изображения нет или отключено
-            main_menu = await message.answer(
-                text=text,
-                reply_markup=reply_markup,
-            )
-            logger.debug(f"Main menu without image sent to user {user_id}")
-    except Exception as exception:
-        logger.error(f"Failed to send main menu with image to user {user_id}: {exception}")
-        # Fallback к отправке только текста
-        main_menu = await message.answer(
-            text=text,
-            reply_markup=reply_markup,
-        )
+    from app.bot.utils.messaging import answer_with_image
+    
+    main_menu = await answer_with_image(
+        message=message,
+        text=text,
+        config=config,
+        reply_markup=reply_markup,
+    )
 
     await state.update_data({MAIN_MESSAGE_ID_KEY: main_menu.message_id})
     return main_menu
@@ -122,33 +106,14 @@ async def edit_main_menu_with_image(
     config: Config,
 ) -> None:
     """Редактирует главное меню с изображением, если оно существует"""
-    try:
-        if config.shop.MAIN_MENU_IMAGE_ENABLED and get_main_menu_image_path(config).exists():
-            # Редактируем сообщение с изображением
-            photo = FSInputFile(get_main_menu_image_path(config))
-            await callback.message.edit_media(
-                media=photo,
-                reply_markup=reply_markup,
-            )
-            await callback.message.edit_caption(
-                caption=text,
-                reply_markup=reply_markup,
-            )
-            logger.debug(f"Main menu with image edited for user {user_id}")
-        else:
-            # Редактируем только текст, если изображения нет или отключено
-            await callback.message.edit_text(
-                text=text,
-                reply_markup=reply_markup,
-            )
-            logger.debug(f"Main menu without image edited for user {user_id}")
-    except Exception as exception:
-        logger.error(f"Failed to edit main menu with image for user {user_id}: {exception}")
-        # Fallback к редактированию только текста
-        await callback.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
-        )
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
+        text=text,
+        config=config,
+        reply_markup=reply_markup,
+    )
 
 
 @router.message(Command(NavMain.START))
@@ -244,50 +209,20 @@ async def redirect_to_main_menu(
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
     is_admin = await IsAdmin()(user_id=user.tg_id)
 
-    try:
-        if config.shop.MAIN_MENU_IMAGE_ENABLED and get_main_menu_image_path(config).exists():
-            # Редактируем сообщение с изображением
-            photo = FSInputFile(get_main_menu_image_path(config))
-            await bot.edit_message_media(
-                media=photo,
-                chat_id=user.tg_id,
-                message_id=main_message_id,
-                reply_markup=main_menu_keyboard(
-                    is_admin,
-                    is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
-                    is_trial_available=await services.subscription.is_trial_available(user),
-                    is_referred_trial_available=await services.referral.is_referred_trial_available(
-                        user
-                    ),
-                ),
-            )
-            await bot.edit_message_caption(
-                caption=_("main_menu:message:main").format(name=user.first_name),
-                chat_id=user.tg_id,
-                message_id=main_message_id,
-                reply_markup=main_menu_keyboard(
-                    is_admin,
-                    is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
-                    is_trial_available=await services.subscription.is_trial_available(user),
-                    is_referred_trial_available=await services.referral.is_referred_trial_available(
-                        user
-                    ),
-                ),
-            )
-        else:
-            # Редактируем только текст, если изображения нет или отключено
-            await bot.edit_message_text(
-                text=_("main_menu:message:main").format(name=user.first_name),
-                chat_id=user.tg_id,
-                message_id=main_message_id,
-                reply_markup=main_menu_keyboard(
-                    is_admin,
-                    is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
-                    is_trial_available=await services.subscription.is_trial_available(user),
-                    is_referred_trial_available=await services.referral.is_referred_trial_available(
-                        user
-                    ),
-                ),
-            )
-    except Exception as exception:
-        logger.error(f"Error redirecting to main menu page: {exception}")
+    from app.bot.utils.messaging import edit_message_with_image
+
+    await edit_message_with_image(
+        bot=bot,
+        chat_id=user.tg_id,
+        message_id=main_message_id,
+        text=_("main_menu:message:main").format(name=user.first_name),
+        config=config,
+        reply_markup=main_menu_keyboard(
+            is_admin,
+            is_referral_available=config.shop.REFERRER_REWARD_ENABLED,
+            is_trial_available=await services.subscription.is_trial_available(user),
+            is_referred_trial_available=await services.referral.is_referred_trial_available(
+                user
+            ),
+        ),
+    )

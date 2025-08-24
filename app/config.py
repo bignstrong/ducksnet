@@ -44,7 +44,7 @@ DEFAULT_DB_NAME = "bot_database"
 
 # Настройки изображений
 DEFAULT_MAIN_MENU_IMAGE_ENABLED = True
-DEFAULT_MAIN_MENU_IMAGE_NAME = "ducksnetMainMenu.png"
+DEFAULT_MAIN_MENU_IMAGE_NAME = "DuckNetMainMenu.png"
 
 DEFAULT_REDIS_DB_NAME = "0"
 DEFAULT_REDIS_HOST = "ducksnet-redis"

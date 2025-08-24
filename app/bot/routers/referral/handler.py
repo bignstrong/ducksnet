@@ -113,13 +113,17 @@ async def callback_referral(
 
     await state.update_data({PREVIOUS_CALLBACK_KEY: NavReferral.MAIN})
 
-    await callback.message.edit_text(
+    from app.bot.utils.messaging import edit_callback_with_image
+
+    await edit_callback_with_image(
+        callback=callback,
         text=await generate_referral_summary_text(
             session=session,
             user=user,
             config=config,
             bot_username=bot_username,
         ),
+        config=config,
         reply_markup=referral_keyboard(),
     )
 
@@ -161,12 +165,17 @@ async def callback_get_referred_trial(
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
     if success:
         await state.update_data({PREVIOUS_CALLBACK_KEY: NavMain.MAIN_MENU})
-        await callback.bot.edit_message_text(
+        
+        from app.bot.utils.messaging import edit_message_with_image
+        
+        await edit_message_with_image(
+            bot=callback.bot,
+            chat_id=callback.message.chat.id,
+            message_id=main_message_id,
             text=_("subscription:ntf:trial_activate_success").format(
                 duration=format_subscription_period(referred_trial_period),
             ),
-            chat_id=callback.message.chat.id,
-            message_id=main_message_id,
+            config=config,
             reply_markup=referral_keyboard(connect=True),
         )
     else:

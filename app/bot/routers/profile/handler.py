@@ -48,6 +48,7 @@ async def callback_profile(
     user: User,
     services: ServicesContainer,
     state: FSMContext,
+    config,  # Добавляем config
 ) -> None:
     logger.info(f"User {user.tg_id} opened profile page.")
     await state.update_data({PREVIOUS_CALLBACK_KEY: NavProfile.MAIN})
@@ -67,8 +68,13 @@ async def callback_profile(
         if client_data and not client_data.has_subscription_expired
         else buy_subscription_keyboard()
     )
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=await prepare_message(user=user, client_data=client_data),
+        config=config,
         reply_markup=reply_markup,
     )
 

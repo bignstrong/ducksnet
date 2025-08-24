@@ -120,7 +120,7 @@ async def main() -> None:
     MaintenanceMiddleware.set_mode(False)
 
     # Register middlewares
-    middlewares.register(dispatcher=dispatcher, i18n=i18n, session=db.session)
+    middlewares.register(dispatcher=dispatcher, i18n=i18n, session=db.session, config=config)
 
     # Register filters
     filters.register(

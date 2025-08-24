@@ -50,7 +50,7 @@ async def redirect_to_connection(request: Request) -> Response:
 
 
 @router.callback_query(F.data == NavDownload.MAIN)
-async def callback_download(callback: CallbackQuery, user: User, state: FSMContext) -> None:
+async def callback_download(callback: CallbackQuery, user: User, state: FSMContext, config: Config) -> None:
     logger.info(f"User {user.tg_id} opened download apps page.")
 
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
@@ -61,18 +61,25 @@ async def callback_download(callback: CallbackQuery, user: User, state: FSMConte
     logger.debug(f"main_message_id: {main_message_id}")
     logger.debug(f"previous_callback: {previous_callback}")
     logger.debug("--------------------------------")
+    
+    from app.bot.utils.messaging import edit_callback_with_image, edit_message_with_image
+    
     if callback.message.message_id != main_message_id:
         await state.update_data({PREVIOUS_CALLBACK_KEY: NavMain.MAIN_MENU})
         previous_callback = NavMain.MAIN_MENU
-        await callback.bot.edit_message_text(
-            text=_("download:message:choose_platform"),
+        await edit_message_with_image(
+            bot=callback.bot,
             chat_id=user.tg_id,
             message_id=main_message_id,
+            text=_("download:message:choose_platform"),
+            config=config,
             reply_markup=platforms_keyboard(previous_callback),
         )
     else:
-        await callback.message.edit_text(
+        await edit_callback_with_image(
+            callback=callback,
             text=_("download:message:choose_platform"),
+            config=config,
             reply_markup=platforms_keyboard(previous_callback),
         )
 
@@ -95,7 +102,11 @@ async def callback_platform(
         case _:
             platform = _("download:message:platform_windows")
 
-    await callback.message.edit_text(
+    from app.bot.utils.messaging import edit_callback_with_image
+
+    await edit_callback_with_image(
+        callback=callback,
         text=_("download:message:connect_to_vpn").format(platform=platform),
+        config=config,
         reply_markup=download_keyboard(platform=callback.data, key=key, url=config.bot.DOMAIN),
     )

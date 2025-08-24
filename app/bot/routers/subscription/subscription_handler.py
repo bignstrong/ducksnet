@@ -27,9 +27,9 @@ async def show_subscription(
     callback: CallbackQuery,
     client_data: ClientData | None,
     callback_data: SubscriptionData,
+    config,  # Добавляем config
 ) -> None:
     if client_data:
-
         if client_data.has_subscription_expired:
             text = _("subscription:message:expired")
         else:
@@ -40,8 +40,12 @@ async def show_subscription(
     else:
         text = _("subscription:message:not_active")
 
-    await callback.message.edit_text(
+    from app.bot.utils.messaging import edit_callback_with_image
+
+    await edit_callback_with_image(
+        callback=callback,
         text=text,
+        config=config,
         reply_markup=subscription_keyboard(
             has_subscription=client_data,
             callback_data=callback_data,
@@ -55,6 +59,7 @@ async def callback_subscription(
     user: User,
     state: FSMContext,
     services: ServicesContainer,
+    config: Config,  # Добавляем config
 ) -> None:
     logger.info(f"User {user.tg_id} opened subscription page.")
     await state.set_state(None)
@@ -70,7 +75,7 @@ async def callback_subscription(
             return
 
     callback_data = SubscriptionData(state=NavSubscription.PROCESS, user_id=user.tg_id)
-    await show_subscription(callback=callback, client_data=client_data, callback_data=callback_data)
+    await show_subscription(callback=callback, client_data=client_data, callback_data=callback_data, config=config)
 
 
 @router.callback_query(SubscriptionData.filter(F.state == NavSubscription.EXTEND))
@@ -95,8 +100,13 @@ async def callback_subscription_extend(
     callback_data.devices = current_devices
     callback_data.state = NavSubscription.DURATION
     callback_data.is_extend = True
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=_("subscription:message:duration"),
+        config=config,
         reply_markup=duration_keyboard(
             plan_service=services.plan,
             callback_data=callback_data,
@@ -111,12 +121,18 @@ async def callback_subscription_change(
     user: User,
     callback_data: SubscriptionData,
     services: ServicesContainer,
+    config: Config,  # Добавляем config
 ) -> None:
     logger.info(f"User {user.tg_id} started change subscription.")
     callback_data.state = NavSubscription.DEVICES
     callback_data.is_change = True
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=_("subscription:message:devices"),
+        config=config,
         reply_markup=devices_keyboard(services.plan.get_all_plans(), callback_data),
     )
 
@@ -128,6 +144,7 @@ async def callback_subscription_process(
     session: AsyncSession,
     callback_data: SubscriptionData,
     services: ServicesContainer,
+    config: Config,  # Добавляем config
 ) -> None:
     logger.info(f"User {user.tg_id} started subscription process.")
     server = await services.server_pool.get_available_server()
@@ -141,8 +158,13 @@ async def callback_subscription_process(
         return
 
     callback_data.state = NavSubscription.DEVICES
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=_("subscription:message:devices"),
+        config=config,
         reply_markup=devices_keyboard(services.plan.get_all_plans(), callback_data),
     )
 
@@ -157,8 +179,13 @@ async def callback_devices_selected(
 ) -> None:
     logger.info(f"User {user.tg_id} selected devices: {callback_data.devices}")
     callback_data.state = NavSubscription.DURATION
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=_("subscription:message:duration"),
+        config=config,
         reply_markup=duration_keyboard(
             plan_service=services.plan,
             callback_data=callback_data,
@@ -174,11 +201,17 @@ async def callback_duration_selected(
     callback_data: SubscriptionData,
     services: ServicesContainer,
     gateway_factory: GatewayFactory,
+    config: Config,  # Добавляем config
 ) -> None:
     logger.info(f"User {user.tg_id} selected duration: {callback_data.duration}")
     callback_data.state = NavSubscription.PAY
-    await callback.message.edit_text(
+    
+    from app.bot.utils.messaging import edit_callback_with_image
+    
+    await edit_callback_with_image(
+        callback=callback,
         text=_("subscription:message:payment_method"),
+        config=config,
         reply_markup=payment_method_keyboard(
             plan=services.plan.get_plan(callback_data.devices),
             callback_data=callback_data,
