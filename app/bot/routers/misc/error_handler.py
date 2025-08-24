@@ -18,12 +18,26 @@ router = Router(name=__name__)
 @router.errors(ExceptionTypeFilter(Exception))
 async def errors_handler(event: ErrorEvent, config: Config, services: ServicesContainer) -> bool:
     if isinstance(event.exception, TelegramForbiddenError):
-        logger.info(f"User {event.update.message.from_user.id} blocked the bot.")
+        # Получаем user_id безопасно
+        user_id = None
+        if hasattr(event.update, 'message') and event.update.message:
+            user_id = event.update.message.from_user.id
+        elif hasattr(event.update, 'callback_query') and event.update.callback_query:
+            user_id = event.update.callback_query.from_user.id
+        
+        logger.info(f"User {user_id} blocked the bot.")
         return True
 
     if isinstance(event.exception, TelegramBadRequest):
+        # Получаем user_id безопасно
+        user_id = None
+        if hasattr(event.update, 'callback_query') and event.update.callback_query:
+            user_id = event.update.callback_query.from_user.id
+        elif hasattr(event.update, 'message') and event.update.message:
+            user_id = event.update.message.from_user.id
+        
         logger.warning(
-            f"User {event.update.callback_query.from_user.id} bad request for edit/send message."
+            f"User {user_id} bad request for edit/send message: {event.exception}"
         )
         return True
 
