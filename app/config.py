@@ -46,6 +46,11 @@ DEFAULT_DB_NAME = "bot_database"
 DEFAULT_MAIN_MENU_IMAGE_ENABLED = True
 DEFAULT_MAIN_MENU_IMAGE_NAME = "DuckNetMainMenu.png"
 
+# Настройки обязательной подписки на канал
+DEFAULT_FORCE_SUBSCRIPTION_ENABLED = False  # По умолчанию выключено для безопасности
+DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_ID = None  # Должно быть задано в .env
+DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_USERNAME = None  # Должно быть задано в .env
+
 DEFAULT_REDIS_DB_NAME = "0"
 DEFAULT_REDIS_HOST = "ducksnet-redis"
 DEFAULT_REDIS_PORT = 6379
@@ -96,6 +101,9 @@ class ShopConfig:
     PAYMENT_YOOMONEY_ENABLED: bool
     MAIN_MENU_IMAGE_ENABLED: bool
     MAIN_MENU_IMAGE_NAME: str
+    FORCE_SUBSCRIPTION_ENABLED: bool
+    FORCE_SUBSCRIPTION_CHANNEL_ID: int | None
+    FORCE_SUBSCRIPTION_CHANNEL_USERNAME: str | None
 
 
 @dataclass
@@ -283,6 +291,24 @@ def load_config() -> Config:
         default=DEFAULT_MAIN_MENU_IMAGE_NAME,
     )
 
+    # Настройки обязательной подписки на канал
+    force_subscription_enabled = env.bool(
+        "SHOP_FORCE_SUBSCRIPTION_ENABLED",
+        default=DEFAULT_FORCE_SUBSCRIPTION_ENABLED,
+    )
+    force_subscription_channel_id = env.int(
+        "SHOP_FORCE_SUBSCRIPTION_CHANNEL_ID",
+        default=DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_ID,
+    ) if force_subscription_enabled else None
+    force_subscription_channel_username = env.str(
+        "SHOP_FORCE_SUBSCRIPTION_CHANNEL_USERNAME",
+        default=DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_USERNAME,
+    ) if force_subscription_enabled else None
+
+    if force_subscription_enabled and not force_subscription_channel_id and not force_subscription_channel_username:
+        logger.error("Force subscription enabled but no channel ID or username provided. Disabling force subscription.")
+        force_subscription_enabled = False
+
     return Config(
         bot=BotConfig(
             TOKEN=env.str("BOT_TOKEN"),
@@ -353,6 +379,9 @@ def load_config() -> Config:
             PAYMENT_YOOMONEY_ENABLED=payment_yoomoney_enabled,
             MAIN_MENU_IMAGE_ENABLED=main_menu_image_enabled,
             MAIN_MENU_IMAGE_NAME=main_menu_image_name,
+            FORCE_SUBSCRIPTION_ENABLED=force_subscription_enabled,
+            FORCE_SUBSCRIPTION_CHANNEL_ID=force_subscription_channel_id,
+            FORCE_SUBSCRIPTION_CHANNEL_USERNAME=force_subscription_channel_username,
         ),
         xui=XUIConfig(
             USERNAME=env.str("XUI_USERNAME"),

@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 from aiohttp.web import HTTPFound, Request, Response
 
+from app.bot.filters import IsSubscribed
 from app.bot.models import ServicesContainer
 from app.bot.utils.constants import (
     APP_ANDROID_SCHEME,
@@ -49,7 +50,7 @@ async def redirect_to_connection(request: Request) -> Response:
     return Response(status=400, reason="Unsupported application.")
 
 
-@router.callback_query(F.data == NavDownload.MAIN)
+@router.callback_query(F.data == NavDownload.MAIN, IsSubscribed())
 async def callback_download(callback: CallbackQuery, user: User, state: FSMContext, config: Config) -> None:
     logger.info(f"User {user.tg_id} opened download apps page.")
 
@@ -84,7 +85,7 @@ async def callback_download(callback: CallbackQuery, user: User, state: FSMConte
         )
 
 
-@router.callback_query(F.data.startswith(NavDownload.PLATFORM))
+@router.callback_query(F.data.startswith(NavDownload.PLATFORM), IsSubscribed())
 async def callback_platform(
     callback: CallbackQuery,
     user: User,

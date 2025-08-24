@@ -20,6 +20,7 @@ def include(app: Application, dispatcher: Dispatcher) -> None:
     dispatcher.include_routers(
         misc.error_handler.router,
         misc.notification_handler.router,
+        misc.subscription_handler.router,  # Добавляем роутер для обработки неподписанных пользователей
         main_menu.handler.router,
         profile.handler.router,
         referral.handler.router,

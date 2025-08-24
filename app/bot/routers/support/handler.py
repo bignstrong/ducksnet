@@ -4,6 +4,7 @@ from aiogram import F, Router
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
+from app.bot.filters import IsSubscribed
 from app.bot.utils.navigation import NavSupport
 from app.config import Config
 from app.db.models import User
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = Router(name=__name__)
 
 
-@router.callback_query(F.data == NavSupport.MAIN)
+@router.callback_query(F.data == NavSupport.MAIN, IsSubscribed())
 async def callback_support(callback: CallbackQuery, user: User, config: Config) -> None:
     logger.info(f"User {user.tg_id} opened support page.")
     
@@ -28,7 +29,7 @@ async def callback_support(callback: CallbackQuery, user: User, config: Config) 
     )
 
 
-@router.callback_query(F.data == NavSupport.HOW_TO_CONNECT)
+@router.callback_query(F.data == NavSupport.HOW_TO_CONNECT, IsSubscribed())
 async def callback_how_to_connect(callback: CallbackQuery, user: User, config: Config) -> None:
     logger.info(f"User {user.tg_id} opened how to connect page.")
     
@@ -42,7 +43,7 @@ async def callback_how_to_connect(callback: CallbackQuery, user: User, config: C
     )
 
 
-@router.callback_query(F.data == NavSupport.VPN_NOT_WORKING)
+@router.callback_query(F.data == NavSupport.VPN_NOT_WORKING, IsSubscribed())
 async def callback_vpn_not_working(callback: CallbackQuery, user: User, config: Config) -> None:
     logger.info(f"User {user.tg_id} opened vpn not working page.")
     

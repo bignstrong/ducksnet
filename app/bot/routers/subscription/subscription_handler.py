@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.filters import IsSubscribed
 from app.bot.models import ClientData, ServicesContainer, SubscriptionData
 from app.bot.payment_gateways import GatewayFactory
 from app.bot.utils.navigation import NavSubscription
@@ -53,7 +54,7 @@ async def show_subscription(
     )
 
 
-@router.callback_query(F.data == NavSubscription.MAIN)
+@router.callback_query(F.data == NavSubscription.MAIN, IsSubscribed())
 async def callback_subscription(
     callback: CallbackQuery,
     user: User,
@@ -78,7 +79,7 @@ async def callback_subscription(
     await show_subscription(callback=callback, client_data=client_data, callback_data=callback_data, config=config)
 
 
-@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.EXTEND))
+@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.EXTEND), IsSubscribed())
 async def callback_subscription_extend(
     callback: CallbackQuery,
     user: User,
@@ -115,7 +116,7 @@ async def callback_subscription_extend(
     )
 
 
-@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.CHANGE))
+@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.CHANGE), IsSubscribed())
 async def callback_subscription_change(
     callback: CallbackQuery,
     user: User,
@@ -137,7 +138,7 @@ async def callback_subscription_change(
     )
 
 
-@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.PROCESS))
+@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.PROCESS), IsSubscribed())
 async def callback_subscription_process(
     callback: CallbackQuery,
     user: User,
@@ -169,7 +170,7 @@ async def callback_subscription_process(
     )
 
 
-@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.DEVICES))
+@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.DEVICES), IsSubscribed())
 async def callback_devices_selected(
     callback: CallbackQuery,
     user: User,
@@ -194,7 +195,7 @@ async def callback_devices_selected(
     )
 
 
-@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.DURATION))
+@router.callback_query(SubscriptionData.filter(F.state == NavSubscription.DURATION), IsSubscribed())
 async def callback_duration_selected(
     callback: CallbackQuery,
     user: User,

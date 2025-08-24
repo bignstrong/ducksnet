@@ -1230,3 +1230,33 @@ msgid_plural "{} months"
 msgstr[0] ""
 msgstr[1] ""
 
+#: app/bot/routers/misc/subscription_handler.py
+msgid "subscription_required:message:not_subscribed"
+msgstr ""
+"🔒 <b>Access Restricted</b>\n"
+"\n"
+"You need to subscribe to our channel to use the bot.\n"
+"\n"
+"📢 After subscribing, click the <i>\"Check Subscription\"</i> button"
+
+#: app/bot/routers/misc/subscription_handler.py
+msgid "subscription_required:message:still_not_subscribed"
+msgstr ""
+"❌ <b>Subscription Not Found</b>\n"
+"\n"
+"You are still not subscribed to our channel.\n"
+"\n"
+"📢 Subscribe to the channel and try again."
+
+#: app/bot/routers/misc/subscription_handler.py
+msgid "subscription_required:popup:still_not_subscribed"
+msgstr "❌ Subscription not found"
+
+#: app/bot/routers/misc/subscription_keyboard.py
+msgid "subscription_required:button:subscribe"
+msgstr "📢 Subscribe to Channel"
+
+#: app/bot/routers/misc/subscription_keyboard.py
+msgid "subscription_required:button:check_subscription"
+msgstr "✅ Check Subscription"
+

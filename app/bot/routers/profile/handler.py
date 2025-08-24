@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
+from app.bot.filters import IsSubscribed
 from app.bot.models import ClientData
 from app.bot.services import ServicesContainer
 from app.bot.utils.constants import PREVIOUS_CALLBACK_KEY
@@ -42,7 +43,7 @@ async def prepare_message(user: User, client_data: ClientData | None) -> str:
     return profile + subscription + statistics
 
 
-@router.callback_query(F.data == NavProfile.MAIN)
+@router.callback_query(F.data == NavProfile.MAIN, IsSubscribed())
 async def callback_profile(
     callback: CallbackQuery,
     user: User,
@@ -79,7 +80,7 @@ async def callback_profile(
     )
 
 
-@router.callback_query(F.data == NavProfile.SHOW_KEY)
+@router.callback_query(F.data == NavProfile.SHOW_KEY, IsSubscribed())
 async def callback_show_key(
     callback: CallbackQuery,
     user: User,

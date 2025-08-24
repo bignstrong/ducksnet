@@ -11,7 +11,7 @@ from aiogram.types import CallbackQuery, Message, FSInputFile
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.filters import IsAdmin
+from app.bot.filters import IsAdmin, IsSubscribed
 from app.bot.models import ServicesContainer
 from app.bot.utils.constants import MAIN_MESSAGE_ID_KEY
 from app.bot.utils.navigation import NavMain
@@ -116,7 +116,7 @@ async def edit_main_menu_with_image(
     )
 
 
-@router.message(Command(NavMain.START))
+@router.message(Command(NavMain.START), IsSubscribed())
 async def command_main_menu(
     message: Message,
     user: User,
@@ -163,7 +163,7 @@ async def command_main_menu(
     )
 
 
-@router.callback_query(F.data == NavMain.MAIN_MENU)
+@router.callback_query(F.data == NavMain.MAIN_MENU, IsSubscribed())
 async def callback_main_menu(
     callback: CallbackQuery,
     user: User,

@@ -6,6 +6,7 @@ from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.filters import IsSubscribed
 from app.bot.models import ServicesContainer
 from app.bot.utils.constants import (
     MAIN_MESSAGE_ID_KEY,
@@ -99,7 +100,7 @@ async def generate_referral_summary_text(
     return text
 
 
-@router.callback_query(F.data == NavReferral.MAIN)
+@router.callback_query(F.data == NavReferral.MAIN, IsSubscribed())
 async def callback_referral(
     callback: CallbackQuery,
     user: User,
@@ -128,7 +129,7 @@ async def callback_referral(
     )
 
 
-@router.callback_query(F.data == NavReferral.GET_REFERRED_TRIAL)
+@router.callback_query(F.data == NavReferral.GET_REFERRED_TRIAL, IsSubscribed())
 async def callback_get_referred_trial(
     callback: CallbackQuery,
     user: User,
