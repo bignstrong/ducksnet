@@ -161,10 +161,13 @@ async def message_name(
         await state.update_data({SERVER_NAME_KEY: server_name})
         await show_add_server(message=message, state=state)
     else:
-        await services.notification.notify_by_message(
+        # Показываем ошибку в том же сообщении
+        main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
+        await edit_admin_message_by_id(
             message=message,
-            text=_("server_management:ntf:name_exists"),
-            duration=5,
+            message_id=main_message_id,
+            text=_("server_management:message:add") + _("server_management:message:enter_name") + "\n\n❌ " + _("server_management:ntf:name_exists"),
+            reply_markup=back_keyboard(NavAdminTools.SERVER_MANAGEMENT),
         )
 
 
@@ -183,10 +186,15 @@ async def message_host(
         await state.update_data({SERVER_HOST_KEY: server_host})
         await show_add_server(message=message, state=state)
     else:
-        await services.notification.notify_by_message(
+        # Показываем ошибку в том же сообщении
+        main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
+        data = await state.get_data()
+        name = _("server_management:message:name").format(server_name=data.get(SERVER_NAME_KEY))
+        await edit_admin_message_by_id(
             message=message,
-            text=_("server_management:ntf:invalid_host"),
-            duration=5,
+            message_id=main_message_id,
+            text=_("server_management:message:add") + name + "\n" + _("server_management:message:enter_host") + "\n\n❌ " + _("server_management:ntf:invalid_host"),
+            reply_markup=back_keyboard(NavAdminTools.ADD_SERVER_BACK),
         )
 
 
@@ -205,10 +213,16 @@ async def message_max_clients(
         await state.update_data({SERVER_MAX_CLIENTS_KEY: server_max_clients})
         await show_add_server(message=message, state=state)
     else:
-        await services.notification.notify_by_message(
+        # Показываем ошибку в том же сообщении
+        main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
+        data = await state.get_data()
+        name = _("server_management:message:name").format(server_name=data.get(SERVER_NAME_KEY))
+        host = _("server_management:message:host").format(server_host=data.get(SERVER_HOST_KEY))
+        await edit_admin_message_by_id(
             message=message,
-            text=_("server_management:ntf:invalid_max_clients"),
-            duration=5,
+            message_id=main_message_id,
+            text=_("server_management:message:add") + name + host + "\n" + _("server_management:message:enter_max_clients") + "\n\n❌ " + _("server_management:ntf:invalid_max_clients"),
+            reply_markup=back_keyboard(NavAdminTools.ADD_SERVER_BACK),
         )
 
 

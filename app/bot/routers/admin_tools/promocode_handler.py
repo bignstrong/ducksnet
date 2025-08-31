@@ -79,22 +79,26 @@ async def callback_duration_selected(
 ) -> None:
     logger.info(f"Admin {user.tg_id} selected {callback.data} days for promocode.")
     promocode = await Promocode.create(session=session, duration=int(callback.data))
-    await show_promocode_editor_main(message=callback.message, state=state)
-
+    
     if promocode:
-        await services.notification.notify_by_message(
-            message=callback.message,
-            text=_("promocode_editor:ntf:created_success").format(
+        # Показываем успешное создание в основном сообщении
+        await edit_admin_message(
+            callback=callback,
+            text=_("promocode_editor:message:main") + "\n\n✅ " + _("promocode_editor:ntf:created_success").format(
                 promocode=promocode.code,
                 duration=format_subscription_period(promocode.duration),
             ),
+            reply_markup=promocode_editor_keyboard(),
         )
     else:
-        await services.notification.notify_by_message(
-            message=callback.message,
-            text=_("promocode_editor:ntf:create_failed"),
-            duration=5,
+        # Показываем ошибку в основном сообщении
+        await edit_admin_message(
+            callback=callback,
+            text=_("promocode_editor:message:main") + "\n\n❌ " + _("promocode_editor:ntf:create_failed"),
+            reply_markup=promocode_editor_keyboard(),
         )
+    
+    await state.set_state(None)
 
 
 # endregion
@@ -123,19 +127,26 @@ async def handle_promocode_input(
     input_promocode = message.text.strip()
     logger.info(f"Admin {user.tg_id} entered promocode: {input_promocode} for deleting.")
 
+    main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
+    
     if await Promocode.delete(session=session, code=input_promocode):
-        await show_promocode_editor_main(message=message, state=state)
-        await services.notification.notify_by_message(
+        # Показываем успешное удаление в основном сообщении
+        await edit_admin_message_by_id(
             message=message,
-            text=_("promocode_editor:ntf:deleted_success").format(promocode=input_promocode),
-            duration=5,
+            message_id=main_message_id,
+            text=_("promocode_editor:message:main") + "\n\n✅ " + _("promocode_editor:ntf:deleted_success").format(promocode=input_promocode),
+            reply_markup=promocode_editor_keyboard(),
         )
     else:
-        await services.notification.notify_by_message(
+        # Показываем ошибку в основном сообщении
+        await edit_admin_message_by_id(
             message=message,
-            text=_("promocode_editor:ntf:delete_failed"),
-            duration=5,
+            message_id=main_message_id,
+            text=_("promocode_editor:message:main") + "\n\n❌ " + _("promocode_editor:ntf:delete_failed"),
+            reply_markup=promocode_editor_keyboard(),
         )
+    
+    await state.set_state(None)
 
 
 # endregion
@@ -179,11 +190,15 @@ async def handle_promocode_input(
             reply_markup=promocode_duration_keyboard(),
         )
     else:
-        await services.notification.notify_by_message(
+        # Показываем ошибку в основном сообщении
+        main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
+        await edit_admin_message_by_id(
             message=message,
-            text=_("promocode_editor:ntf:edit_failed"),
-            duration=5,
+            message_id=main_message_id,
+            text=_("promocode_editor:message:main") + "\n\n❌ " + _("promocode_editor:ntf:edit_failed"),
+            reply_markup=promocode_editor_keyboard(),
         )
+        await state.set_state(None)
 
 
 @router.callback_query(EditPromocodeStates.selecting_duration, F.data.regexp(r'^\d+$'), IsAdmin())
@@ -201,14 +216,17 @@ async def callback_edit_duration_selected(
         code=input_promocode,
         duration=int(callback.data),
     )
-    await show_promocode_editor_main(message=callback.message, state=state)
-    await services.notification.notify_by_message(
-        message=callback.message,
-        text=_("promocode_editor:ntf:edited_success").format(
+    
+    # Показываем успешное редактирование в основном сообщении
+    await edit_admin_message(
+        callback=callback,
+        text=_("promocode_editor:message:main") + "\n\n✅ " + _("promocode_editor:ntf:edited_success").format(
             promocode=promocode.code,
             duration=format_subscription_period(promocode.duration),
         ),
+        reply_markup=promocode_editor_keyboard(),
     )
+    await state.set_state(None)
 
 
 # endregion
