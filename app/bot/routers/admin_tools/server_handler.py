@@ -251,16 +251,36 @@ async def callback_confirmation(
     if server:
         await services.server_pool.sync_servers()
         await state.set_state(None)
-        await callback_server_management(callback=callback, user=user, session=session, state=state)
-        await services.notification.show_popup(
+        
+        # Показываем список серверов с сообщением об успехе
+        text = _("server_management:message:main")
+        servers = await Server.get_all(session)
+        if not servers:
+            text += _("server_management:message:empty")
+        
+        # Добавляем сообщение об успешном добавлении
+        text += "\n\n✅ " + _("server_management:popup:added_success")
+        
+        await edit_admin_message(
             callback=callback,
-            text=_("server_management:popup:added_success"),
+            text=text,
+            reply_markup=servers_keyboard(servers),
         )
-
     else:
-        await services.notification.show_popup(
+        # Показываем ошибку в основном сообщении
+        await state.set_state(None)
+        text = _("server_management:message:main")
+        servers = await Server.get_all(session)
+        if not servers:
+            text += _("server_management:message:empty")
+            
+        # Добавляем сообщение об ошибке
+        text += "\n\n❌ " + _("server_management:popup:add_failed")
+        
+        await edit_admin_message(
             callback=callback,
-            text=_("server_management:popup:add_failed"),
+            text=text,
+            reply_markup=servers_keyboard(servers),
         )
 
 
@@ -333,19 +353,26 @@ async def callback_delete_server(
     server_name = callback.data.split("_")[2]
     logger.info(f"Dev {user.tg_id} open server {server_name}.")
     deleted = await Server.delete(session=session, name=server_name)
-    await callback_server_management(callback=callback, user=user, session=session, state=state)
-
+    
+    # Показываем результат удаления в основном сообщении
+    text = _("server_management:message:main")
+    servers = await Server.get_all(session)
+    if not servers:
+        text += _("server_management:message:empty")
+        
     if deleted:
         await services.server_pool.sync_servers()
-        await services.notification.show_popup(
-            callback=callback,
-            text=_("server_management:popup:deleted_success"),
-        )
+        # Добавляем сообщение об успешном удалении
+        text += "\n\n✅ " + _("server_management:popup:deleted_success")
     else:
-        await services.notification.show_popup(
-            callback=callback,
-            text=_("server_management:popup:delete_failed"),
-        )
+        # Добавляем сообщение об ошибке удаления
+        text += "\n\n❌ " + _("server_management:popup:delete_failed")
+    
+    await edit_admin_message(
+        callback=callback,
+        text=text,
+        reply_markup=servers_keyboard(servers),
+    )
 
 
 # endregion
