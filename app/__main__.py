@@ -49,11 +49,23 @@ async def on_startup(config: Config, bot: Bot, services: ServicesContainer, db: 
     await services.notification.notify_developer(BOT_STARTED_TAG)
     logging.info("Bot started.")
 
-    tasks.transactions.start_scheduler(db.session)
+    tasks.start_transactions_scheduler(db.session)
     if config.shop.REFERRER_REWARD_ENABLED:
-        tasks.referral.start_scheduler(
+        tasks.start_referral_scheduler(
             session_factory=db.session, referral_service=services.referral
         )
+    
+    # Запускаем планировщик проверки истечения подписок
+    if config.shop.SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED:
+        tasks.start_subscription_expiry_scheduler(
+            session_factory=db.session,
+            notification_service=services.notification,
+            vpn_service=services.vpn,
+            config=config,
+        )
+        logger.info("Subscription expiry notifications are enabled")
+    else:
+        logger.info("Subscription expiry notifications are disabled")
 
 
 async def main() -> None:

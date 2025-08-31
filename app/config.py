@@ -51,6 +51,10 @@ DEFAULT_FORCE_SUBSCRIPTION_ENABLED = False  # По умолчанию выклю
 DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_ID = None  # Должно быть задано в .env
 DEFAULT_FORCE_SUBSCRIPTION_CHANNEL_USERNAME = None  # Должно быть задано в .env
 
+# Настройки системы уведомлений о истечении подписок
+DEFAULT_SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED = True
+DEFAULT_SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES = 30
+
 DEFAULT_REDIS_DB_NAME = "0"
 DEFAULT_REDIS_HOST = "ducksnet-redis"
 DEFAULT_REDIS_PORT = 6379
@@ -104,6 +108,8 @@ class ShopConfig:
     FORCE_SUBSCRIPTION_ENABLED: bool
     FORCE_SUBSCRIPTION_CHANNEL_ID: int | None
     FORCE_SUBSCRIPTION_CHANNEL_USERNAME: str | None
+    SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED: bool
+    SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES: int
 
 
 @dataclass
@@ -382,6 +388,15 @@ def load_config() -> Config:
             FORCE_SUBSCRIPTION_ENABLED=force_subscription_enabled,
             FORCE_SUBSCRIPTION_CHANNEL_ID=force_subscription_channel_id,
             FORCE_SUBSCRIPTION_CHANNEL_USERNAME=force_subscription_channel_username,
+            SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED=env.bool(
+                "SHOP_SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED",
+                default=DEFAULT_SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED,
+            ),
+            SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES=env.int(
+                "SHOP_SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES",
+                default=DEFAULT_SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES,
+                validate=Range(min=1, error="SHOP_SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES must be >= 1"),
+            ),
         ),
         xui=XUIConfig(
             USERNAME=env.str("XUI_USERNAME"),

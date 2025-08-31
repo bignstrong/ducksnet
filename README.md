@@ -118,6 +118,9 @@ cd ducksnet
 | YOOMONEY_WALLET_ID             | ⭕        | -                                                       | Wallet ID для оплаты через YooMoney                                                                         |
 | YOOMONEY_NOTIFICATION_SECRET   | ⭕        | -                                                       | Секретный ключ уведомлений для оплаты через YooMoney                                                        |
 |                                |           |                                                         |
+| SHOP_SUBSCRIPTION_EXPIRY_NOTIFICATIONS_ENABLED | ⭕ | True                                       | Включить уведомления о скором истечении подписки                                                            |
+| SHOP_SUBSCRIPTION_EXPIRY_CHECK_INTERVAL_MINUTES | ⭕ | 30                                        | Интервал проверки истечения подписок в минутах                                                              |
+|                                |           |                                                         |
 | LOG_LEVEL                      | ⭕        | DEBUG                                                   | Уровень логирования (например, INFO, DEBUG)                                                                 |
 | LOG_FORMAT                     | ⭕        | %(asctime)s \| %(name)s \| %(levelname)s \| %(message)s | Формат логов                                                                                                |
 | LOG_ARCHIVE_FORMAT             | ⭕        | zip                                                     | Формат архива логов (например, zip, gz)                                                                     |
