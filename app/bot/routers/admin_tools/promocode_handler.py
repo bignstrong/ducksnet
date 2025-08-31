@@ -49,6 +49,7 @@ async def show_promocode_editor_main(message: Message, state: FSMContext) -> Non
 @router.callback_query(F.data == NavAdminTools.PROMOCODE_EDITOR, IsAdmin())
 async def callback_promocode_editor(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened promocode editor.")
+    await state.clear()  # Clear any active states
     await edit_admin_message(
         callback=callback,
         text=_("promocode_editor:message:main"),
@@ -68,7 +69,7 @@ async def callback_create_promocode(callback: CallbackQuery, user: User, state: 
     )
 
 
-@router.callback_query(CreatePromocodeStates.selecting_duration, IsAdmin())
+@router.callback_query(CreatePromocodeStates.selecting_duration, F.data.regexp(r'^\d+$'), IsAdmin())
 async def callback_duration_selected(
     callback: CallbackQuery,
     user: User,
@@ -183,15 +184,15 @@ async def handle_promocode_input(
         )
 
 
-@router.callback_query(EditPromocodeStates.selecting_duration, IsAdmin())
-async def callback_duration_selected(
+@router.callback_query(EditPromocodeStates.selecting_duration, F.data.regexp(r'^\d+$'), IsAdmin())
+async def callback_edit_duration_selected(
     callback: CallbackQuery,
     user: User,
     session: AsyncSession,
     state: FSMContext,
     services: ServicesContainer,
 ) -> None:
-    logger.info(f"Admin {user.tg_id} selected {callback.data} days for promocode.")
+    logger.info(f"Admin {user.tg_id} selected {callback.data} days for promocode edit.")
     input_promocode = await state.get_value(INPUT_PROMOCODE_KEY)
     promocode = await Promocode.update(
         session=session,

@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
@@ -13,6 +14,7 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == NavAdminTools.USER_EDITOR, IsAdmin())
-async def callback_user_editor(callback: CallbackQuery, user: User) -> None:
+async def callback_user_editor(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened user editor.")
+    await state.clear()  # Clear any active states
     await callback.answer(text=_("global:popup:development"), show_alert=True)

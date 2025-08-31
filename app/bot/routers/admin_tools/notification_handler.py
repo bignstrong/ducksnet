@@ -57,6 +57,7 @@ async def callback_send_notification(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification.")
+    await state.clear()  # Clear any active states
     await edit_admin_message(
         callback=callback,
         text=_("notification:message:main"),

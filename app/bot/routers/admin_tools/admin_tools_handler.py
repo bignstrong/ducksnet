@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,8 +19,9 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == NavAdminTools.MAIN, IsAdmin())
-async def callback_admin_tools(callback: CallbackQuery, user: User) -> None:
+async def callback_admin_tools(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened admin tools.")
+    await state.clear()  # Clear any active states
     is_dev = await IsDev()(user_id=user.tg_id)
     
     await edit_admin_message(
