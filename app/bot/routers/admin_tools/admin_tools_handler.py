@@ -4,12 +4,11 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.filters import IsAdmin, IsDev
 from app.bot.services import ServicesContainer
 from app.bot.utils.navigation import NavAdminTools
-from app.db.models import Transaction, User
+from app.db.models import User
 
 from .keyboard import admin_tools_keyboard
 
@@ -18,7 +17,7 @@ router = Router(name=__name__)
 
 
 @router.callback_query(F.data == NavAdminTools.MAIN, IsAdmin())
-async def callback_admin_tools_main(callback: CallbackQuery, user: User) -> None:
+async def callback_admin_tools(callback: CallbackQuery, user: User) -> None:
     logger.info(f"Admin {user.tg_id} opened admin tools.")
     is_dev = await IsDev()(user_id=user.tg_id)
     try:
@@ -30,8 +29,13 @@ async def callback_admin_tools_main(callback: CallbackQuery, user: User) -> None
         await callback.answer()
 
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models import Transaction
+
+
 @router.callback_query(F.data == NavAdminTools.TEST, IsAdmin())
-async def callback_admin_tools_test(
+async def callback_admin_tools(
     callback: CallbackQuery,
     user: User,
     session: AsyncSession,
@@ -56,3 +60,17 @@ async def callback_admin_tools_test(
     )
 
     await callback.message.answer(text=text)
+    # logger.info(
+    #     f"{user}\n\n{user.transactions}\n\n{user.server}\n\n{user.activated_promocodes}\n\n"
+    # )
+    # logger.info(f"{await vpn_service.get_key(user.tg_id)}\n\n")
+
+    # connection = await server_pool_service.get_connection(user.server_id)
+
+    # server = connection.server
+    # logger.info(f"{server}\n\n{server.users}\n\n")
+
+    # transaction = await Transaction.get(session=session, payment_id="test")
+    # logger.info(f"{transaction}\n\n{transaction.user}")
+
+    # logger.info(server.current_clients)
