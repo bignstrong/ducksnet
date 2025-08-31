@@ -1,7 +1,6 @@
 import logging
 
 from aiogram import F, Router
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -56,10 +55,7 @@ async def callback_server_management(
     if not servers:
         text += _("server_management:message:empty")
 
-    try:
-        await callback.message.edit_text(text=text, reply_markup=servers_keyboard(servers))
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(text=text, reply_markup=servers_keyboard(servers))
 
 
 @router.callback_query(F.data == NavAdminTools.SYNC_SERVERS, IsDev())
@@ -113,15 +109,12 @@ async def show_add_server(message: Message, state: FSMContext) -> None:
             text += _("server_management:message:confirm")
             reply_markup = confirm_add_server_keyboard()
 
-    try:
-        await message.bot.edit_message_text(
-            text=text,
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=reply_markup,
-        )
-    except TelegramBadRequest:
-        pass
+    await message.bot.edit_message_text(
+        text=text,
+        chat_id=message.chat.id,
+        message_id=main_message_id,
+        reply_markup=reply_markup,
+    )
 
 
 @router.callback_query(StateFilter("*"), F.data == NavAdminTools.ADD_SERVER_BACK, IsDev())
@@ -277,13 +270,10 @@ async def callback_show_server(
         clients=server.current_clients,
         max_clients=server.max_clients,
     )
-    try:
-        await callback.message.edit_text(
-            text=text,
-            reply_markup=server_keyboard(server_name),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=text,
+        reply_markup=server_keyboard(server_name),
+    )
 
 
 @router.callback_query(F.data.startswith(NavAdminTools.PING_SERVER), IsDev())

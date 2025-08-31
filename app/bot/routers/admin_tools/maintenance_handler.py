@@ -1,7 +1,6 @@
 import logging
 
 from aiogram import F, Router
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
@@ -26,13 +25,10 @@ async def callback_maintenance_mode(callback: CallbackQuery, user: User) -> None
         if MaintenanceMiddleware.active
         else _("maintenance:status:disabled")
     )
-    try:
-        await callback.message.edit_text(
-            text=_("maintenance:message:main").format(status=status),
-            reply_markup=maintenance_mode_keyboard(),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("maintenance:message:main").format(status=status),
+        reply_markup=maintenance_mode_keyboard(),
+    )
 
 
 @router.callback_query(F.data == NavAdminTools.MAINTENANCE_MODE_ENABLE, IsAdmin())
@@ -45,13 +41,10 @@ async def callback_maintenance_mode_enable(
     from app.bot.middlewares import MaintenanceMiddleware
 
     MaintenanceMiddleware.set_mode(True)
-    try:
-        await callback.message.edit_text(
-            text=_("maintenance:message:main").format(status=_("maintenance:status:enabled")),
-            reply_markup=maintenance_mode_keyboard(),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("maintenance:message:main").format(status=_("maintenance:status:enabled")),
+        reply_markup=maintenance_mode_keyboard(),
+    )
     await services.notification.show_popup(
         callback=callback,
         text=_("maintenance:popup:enabled"),
@@ -68,13 +61,10 @@ async def callback_maintenance_mode_disable(
     from app.bot.middlewares import MaintenanceMiddleware
 
     MaintenanceMiddleware.set_mode(False)
-    try:
-        await callback.message.edit_text(
-            text=_("maintenance:message:main").format(status=_("maintenance:status:disabled")),
-            reply_markup=maintenance_mode_keyboard(),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("maintenance:message:main").format(status=_("maintenance:status:disabled")),
+        reply_markup=maintenance_mode_keyboard(),
+    )
     await services.notification.show_popup(
         callback=callback,
         text=_("maintenance:popup:disabled"),

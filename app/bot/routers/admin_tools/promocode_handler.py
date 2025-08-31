@@ -1,7 +1,6 @@
 import logging
 
 from aiogram import F, Router
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
@@ -38,15 +37,12 @@ class EditPromocodeStates(StatesGroup):
 async def show_promocode_editor_main(message: Message, state: FSMContext) -> None:
     await state.set_state(None)
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-    try:
-        await message.bot.edit_message_text(
-            text=_("promocode_editor:message:main"),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
-            reply_markup=promocode_editor_keyboard(),
-        )
-    except TelegramBadRequest:
-        pass
+    await message.bot.edit_message_text(
+        text=_("promocode_editor:message:main"),
+        chat_id=message.chat.id,
+        message_id=main_message_id,
+        reply_markup=promocode_editor_keyboard(),
+    )
 
 
 @router.callback_query(F.data == NavAdminTools.PROMOCODE_EDITOR, IsAdmin())
@@ -60,13 +56,10 @@ async def callback_promocode_editor(callback: CallbackQuery, user: User, state: 
 async def callback_create_promocode(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} started creating promocode.")
     await state.set_state(CreatePromocodeStates.selecting_duration)
-    try:
-        await callback.message.edit_text(
-            text=_("promocode_editor:message:create"),
-            reply_markup=promocode_duration_keyboard(),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("promocode_editor:message:create"),
+        reply_markup=promocode_duration_keyboard(),
+    )
 
 
 @router.callback_query(CreatePromocodeStates.selecting_duration, IsAdmin())
@@ -105,13 +98,10 @@ async def callback_duration_selected(
 async def callback_delete_promocode(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} started deleting promocode.")
     await state.set_state(DeletePromocodeStates.promocode_input)
-    try:
-        await callback.message.edit_text(
-            text=_("promocode_editor:message:delete"),
-            reply_markup=back_keyboard(NavAdminTools.PROMOCODE_EDITOR),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("promocode_editor:message:delete"),
+        reply_markup=back_keyboard(NavAdminTools.PROMOCODE_EDITOR),
+    )
 
 
 @router.message(DeletePromocodeStates.promocode_input, IsAdmin())
@@ -148,13 +138,10 @@ async def handle_promocode_input(
 async def callback_edit_promocode(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} started deleting promocode.")
     await state.set_state(EditPromocodeStates.promocode_input)
-    try:
-        await callback.message.edit_text(
-            text=_("promocode_editor:message:edit"),
-            reply_markup=back_keyboard(NavAdminTools.PROMOCODE_EDITOR),
-        )
-    except TelegramBadRequest:
-        await callback.answer()
+    await callback.message.edit_text(
+        text=_("promocode_editor:message:edit"),
+        reply_markup=back_keyboard(NavAdminTools.PROMOCODE_EDITOR),
+    )
 
 
 @router.message(EditPromocodeStates.promocode_input, IsAdmin())
@@ -173,18 +160,15 @@ async def handle_promocode_input(
         await state.set_state(EditPromocodeStates.selecting_duration)
         await state.update_data({INPUT_PROMOCODE_KEY: input_promocode})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        try:
-            await message.bot.edit_message_text(
-                text=_("promocode_editor:message:edit_duration").format(
-                    promocode=promocode.code,
-                    duration=promocode.duration,
-                ),
-                chat_id=message.chat.id,
-                message_id=main_message_id,
-                reply_markup=promocode_duration_keyboard(),
-            )
-        except TelegramBadRequest:
-            pass
+        await message.bot.edit_message_text(
+            text=_("promocode_editor:message:edit_duration").format(
+                promocode=promocode.code,
+                duration=promocode.duration,
+            ),
+            chat_id=message.chat.id,
+            message_id=main_message_id,
+            reply_markup=promocode_duration_keyboard(),
+        )
     else:
         await services.notification.notify_by_message(
             message=message,
