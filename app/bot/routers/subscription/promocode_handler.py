@@ -11,6 +11,7 @@ from app.bot.models import ServicesContainer
 from app.bot.utils.constants import MAIN_MESSAGE_ID_KEY
 from app.bot.utils.formatting import format_subscription_period
 from app.bot.utils.navigation import NavSubscription
+from app.bot.utils.safe_edit import safe_edit_text
 from app.db.models import Promocode, User
 
 from .keyboard import promocode_keyboard
@@ -27,7 +28,8 @@ class ActivatePromocodeStates(StatesGroup):
 async def callback_promocode(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"User {user.tg_id} started activating promocode.")
     await state.set_state(ActivatePromocodeStates.promocode_input)
-    await callback.message.edit_text(
+    await safe_edit_text(
+        callback=callback,
         text=_("promocode:message:main"),
         reply_markup=promocode_keyboard(),
     )

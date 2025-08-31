@@ -13,6 +13,7 @@ from app.bot.payment_gateways import GatewayFactory
 from app.bot.utils.constants import TransactionStatus
 from app.bot.utils.formatting import format_subscription_period
 from app.bot.utils.navigation import NavSubscription
+from app.bot.utils.safe_edit import safe_edit_text
 from app.db.models import Transaction, User
 
 from .keyboard import pay_keyboard
@@ -61,7 +62,8 @@ async def callback_payment_method_selected(
         else:
             text = _("payment:message:order")
 
-        await callback.message.edit_text(
+        await safe_edit_text(
+            callback=callback,
             text=text.format(
                 devices=devices,
                 duration=format_subscription_period(duration),

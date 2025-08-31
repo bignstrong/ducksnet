@@ -29,8 +29,14 @@ async def safe_edit_text(
             reply_markup=reply_markup,
         )
     except TelegramBadRequest as e:
-        if "there is no text in the message to edit" in str(e):
-            logger.warning(f"Cannot edit message without text, sending new one")
+        error_msg = str(e).lower()
+        if "there is no text in the message to edit" in error_msg or "message can't be edited" in error_msg:
+            logger.warning(f"Cannot edit message, sending new one: {e}")
+            # Удаляем старое сообщение и отправляем новое
+            try:
+                await callback.message.delete()
+            except Exception:
+                pass  # Игнорируем ошибки удаления
             await callback.message.answer(
                 text=text,
                 reply_markup=reply_markup,
