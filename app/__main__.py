@@ -63,9 +63,9 @@ async def on_startup(config: Config, bot: Bot, services: ServicesContainer, db: 
             vpn_service=services.vpn,
             config=config,
         )
-        logger.info("Subscription expiry notifications are enabled")
+        logging.info("Subscription expiry notifications are enabled")
     else:
-        logger.info("Subscription expiry notifications are disabled")
+        logging.info("Subscription expiry notifications are disabled")
 
 
 async def main() -> None:
