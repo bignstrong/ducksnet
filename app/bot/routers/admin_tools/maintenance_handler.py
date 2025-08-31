@@ -43,7 +43,8 @@ async def callback_maintenance_mode_enable(
     from app.bot.middlewares import MaintenanceMiddleware
 
     MaintenanceMiddleware.set_mode(True)
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("maintenance:message:main").format(status=_("maintenance:status:enabled")),
         reply_markup=maintenance_mode_keyboard(),
     )
@@ -63,7 +64,8 @@ async def callback_maintenance_mode_disable(
     from app.bot.middlewares import MaintenanceMiddleware
 
     MaintenanceMiddleware.set_mode(False)
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("maintenance:message:main").format(status=_("maintenance:status:disabled")),
         reply_markup=maintenance_mode_keyboard(),
     )

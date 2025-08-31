@@ -13,6 +13,7 @@ from app.bot.payment_gateways import GatewayFactory
 from app.bot.routers.misc.keyboard import back_keyboard
 from app.bot.utils.constants import MAIN_MESSAGE_ID_KEY, Currency
 from app.bot.utils.navigation import NavAdminTools
+from app.bot.utils.admin_messaging import edit_admin_message, edit_admin_message_by_id
 from app.db.models import Invite, User
 
 from .keyboard import (
@@ -34,7 +35,8 @@ class CreateInviteStates(StatesGroup):
 async def callback_invite_editor(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened invite editor.")
     await state.set_state(None)
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("invite_editor:message:main"),
         reply_markup=invite_editor_keyboard(),
     )
@@ -46,7 +48,8 @@ async def callback_create_invite(callback: CallbackQuery, user: User, state: FSM
     await state.set_state(CreateInviteStates.invite_input)
     await state.update_data({MAIN_MESSAGE_ID_KEY: callback.message.message_id})
 
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("invite_editor:message:enter_name"),
         reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
     )
@@ -73,12 +76,12 @@ async def handle_invite_input(
 
         await state.set_state(None)
 
-        await message.bot.edit_message_text(
+        await edit_admin_message_by_id(
+            message=message,
+            message_id=main_message_id,
             text=_("invite_editor:message:created_success").format(
                 name=invite_name, link=invite_link
             ),
-            chat_id=message.chat.id,
-            message_id=main_message_id,
             reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
         )
     except Exception as e:
@@ -99,12 +102,14 @@ async def callback_list_invites(
     invites = await Invite.get_all(session=session)
 
     if invites:
-        await callback.message.edit_text(
+        await edit_admin_message(
+            callback=callback,
             text=_("invite_editor:message:list"),
             reply_markup=invite_list_keyboard(invites),
         )
     else:
-        await callback.message.edit_text(
+        await edit_admin_message(
+            callback=callback,
             text=_("invite_editor:message:no_invites"),
             reply_markup=back_keyboard(NavAdminTools.INVITE_EDITOR),
         )
@@ -117,7 +122,8 @@ async def callback_invite_page(callback: CallbackQuery, user: User, session: Asy
 
     logger.info(f"Admin {user.tg_id} is now on page #{page + 1} of invites.")
 
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("invite_editor:message:list"),
         reply_markup=invite_list_keyboard(invites, page=page),
     )
@@ -177,7 +183,8 @@ async def callback_invite_details(
     else:
         revenue_text = "• " + _("invite_editor:revenue:none")
 
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("invite_editor:message:details").format(
             name=invite.name,
             link=invite_link,
@@ -258,7 +265,8 @@ async def callback_delete_invite_prompt(
 
     logger.info(f"Admin {user.tg_id} confirmed deletion of invite {invite_name}.")
 
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("invite_editor:message:confirm_delete").format(name=invite.name),
         reply_markup=confirm_delete_invite_keyboard(invite_id),
     )

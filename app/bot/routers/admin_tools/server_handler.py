@@ -18,7 +18,7 @@ from app.bot.utils.constants import (
     SERVER_NAME_KEY,
 )
 from app.bot.utils.navigation import NavAdminTools
-from app.bot.utils.admin_messaging import edit_admin_message
+from app.bot.utils.admin_messaging import edit_admin_message, edit_admin_message_by_id
 from app.bot.utils.network import ping_url
 from app.bot.utils.validation import is_valid_client_count, is_valid_host
 from app.db.models import Server, User
@@ -114,10 +114,10 @@ async def show_add_server(message: Message, state: FSMContext) -> None:
             text += _("server_management:message:confirm")
             reply_markup = confirm_add_server_keyboard()
 
-    await message.bot.edit_message_text(
-        text=text,
-        chat_id=message.chat.id,
+    await edit_admin_message_by_id(
+        message=message,
         message_id=main_message_id,
+        text=text,
         reply_markup=reply_markup,
     )
 
@@ -275,7 +275,8 @@ async def callback_show_server(
         clients=server.current_clients,
         max_clients=server.max_clients,
     )
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=text,
         reply_markup=server_keyboard(server_name),
     )
