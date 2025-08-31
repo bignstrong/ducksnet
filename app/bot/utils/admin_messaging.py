@@ -1,48 +1,101 @@
 """
-Утилиты для админских сообщений без изображений.
+Утилиты для отправки сообщений в админ-панели с изображением.
 """
 import logging
-from aiogram.types import CallbackQuery, Message, InlineKeyboardMarkup
+from typing import Optional
+
+from aiogram.types import CallbackQuery, FSInputFile, InlineKeyboardMarkup, InputMediaPhoto, Message
+
+from app.config import DEFAULT_DATA_DIR
 
 logger = logging.getLogger(__name__)
+
+# Путь к картинке админ-панели
+ADMIN_IMAGE_PATH = DEFAULT_DATA_DIR / "images" / "AdminPanel.png"
 
 
 async def edit_admin_message(
     callback: CallbackQuery,
     text: str,
-    reply_markup: InlineKeyboardMarkup | None = None,
+    reply_markup: Optional[InlineKeyboardMarkup] = None,
 ) -> None:
     """
-    Редактирует сообщение для админки без изображений.
+    Безопасно редактирует сообщение в админ-панели с картинкой.
+    
+    Args:
+        callback: CallbackQuery object
+        text: Текст сообщения (будет использован как caption)
+        reply_markup: Клавиатура
     """
     try:
-        await callback.message.edit_text(
-            text=text,
-            reply_markup=reply_markup,
-        )
-        logger.debug(f"Admin message edited for user {callback.from_user.id}")
+        # Пытаемся заменить картинку и текст
+        if ADMIN_IMAGE_PATH.exists():
+            photo = FSInputFile(ADMIN_IMAGE_PATH)
+            media = InputMediaPhoto(
+                media=photo, 
+                caption=text
+            )
+            await callback.message.edit_media(
+                media=media,
+                reply_markup=reply_markup,
+            )
+            logger.debug(f"Admin message with image edited in chat {callback.message.chat.id}")
+        else:
+            # Если картинки нет, редактируем только подпись
+            await callback.message.edit_caption(
+                caption=text,
+                reply_markup=reply_markup,
+            )
+            logger.debug(f"Admin message caption edited in chat {callback.message.chat.id}")
     except Exception as e:
         logger.warning(f"Failed to edit admin message: {e}")
-        # Если не получается отредактировать, отправляем новое
-        await callback.message.answer(
-            text=text,
-            reply_markup=reply_markup,
-        )
+        # Fallback - отправляем новое сообщение
+        try:
+            if ADMIN_IMAGE_PATH.exists():
+                photo = FSInputFile(ADMIN_IMAGE_PATH)
+                await callback.message.answer_photo(
+                    photo=photo,
+                    caption=text,
+                    reply_markup=reply_markup,
+                )
+                logger.debug(f"New admin message with image sent to chat {callback.message.chat.id}")
+            else:
+                await callback.message.answer(
+                    text=text,
+                    reply_markup=reply_markup,
+                )
+                logger.debug(f"New admin text message sent to chat {callback.message.chat.id}")
+        except Exception as fallback_error:
+            logger.error(f"Failed to send fallback admin message: {fallback_error}")
 
 
 async def send_admin_message(
     message: Message,
     text: str,
-    reply_markup: InlineKeyboardMarkup | None = None,
+    reply_markup: Optional[InlineKeyboardMarkup] = None,
 ) -> None:
     """
-    Отправляет сообщение для админки без изображений.
+    Отправляет новое сообщение в админ-панели с картинкой.
+    
+    Args:
+        message: Message object
+        text: Текст сообщения (будет использован как caption)
+        reply_markup: Клавиатура
     """
     try:
-        await message.answer(
-            text=text,
-            reply_markup=reply_markup,
-        )
-        logger.debug(f"Admin message sent to user {message.from_user.id}")
+        if ADMIN_IMAGE_PATH.exists():
+            photo = FSInputFile(ADMIN_IMAGE_PATH)
+            await message.answer_photo(
+                photo=photo,
+                caption=text,
+                reply_markup=reply_markup,
+            )
+            logger.debug(f"Admin message with image sent to chat {message.chat.id}")
+        else:
+            await message.answer(
+                text=text,
+                reply_markup=reply_markup,
+            )
+            logger.debug(f"Admin text message sent to chat {message.chat.id}")
     except Exception as e:
         logger.error(f"Failed to send admin message: {e}")

@@ -13,6 +13,7 @@ from app.bot.routers.misc.keyboard import back_keyboard
 from app.bot.utils.constants import INPUT_PROMOCODE_KEY, MAIN_MESSAGE_ID_KEY
 from app.bot.utils.formatting import format_subscription_period
 from app.bot.utils.navigation import NavAdminTools
+from app.bot.utils.admin_messaging import edit_admin_message
 from app.db.models import Promocode, User
 
 from .keyboard import promocode_duration_keyboard, promocode_editor_keyboard
@@ -48,7 +49,11 @@ async def show_promocode_editor_main(message: Message, state: FSMContext) -> Non
 @router.callback_query(F.data == NavAdminTools.PROMOCODE_EDITOR, IsAdmin())
 async def callback_promocode_editor(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} opened promocode editor.")
-    await show_promocode_editor_main(message=callback.message, state=state)
+    await edit_admin_message(
+        callback=callback,
+        text=_("promocode_editor:message:main"),
+        reply_markup=promocode_editor_keyboard(),
+    )
 
 
 # region: Create Promocode
@@ -56,7 +61,8 @@ async def callback_promocode_editor(callback: CallbackQuery, user: User, state: 
 async def callback_create_promocode(callback: CallbackQuery, user: User, state: FSMContext) -> None:
     logger.info(f"Admin {user.tg_id} started creating promocode.")
     await state.set_state(CreatePromocodeStates.selecting_duration)
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("promocode_editor:message:create"),
         reply_markup=promocode_duration_keyboard(),
     )

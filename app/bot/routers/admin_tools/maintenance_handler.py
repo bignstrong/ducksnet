@@ -7,6 +7,7 @@ from aiogram.utils.i18n import gettext as _
 from app.bot.filters import IsAdmin
 from app.bot.models import ServicesContainer
 from app.bot.utils.navigation import NavAdminTools
+from app.bot.utils.admin_messaging import edit_admin_message
 from app.db.models import User
 
 from .keyboard import maintenance_mode_keyboard
@@ -25,7 +26,8 @@ async def callback_maintenance_mode(callback: CallbackQuery, user: User) -> None
         if MaintenanceMiddleware.active
         else _("maintenance:status:disabled")
     )
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("maintenance:message:main").format(status=status),
         reply_markup=maintenance_mode_keyboard(),
     )

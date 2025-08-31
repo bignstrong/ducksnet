@@ -18,6 +18,7 @@ from app.bot.utils.constants import (
     SERVER_NAME_KEY,
 )
 from app.bot.utils.navigation import NavAdminTools
+from app.bot.utils.admin_messaging import edit_admin_message
 from app.bot.utils.network import ping_url
 from app.bot.utils.validation import is_valid_client_count, is_valid_host
 from app.db.models import Server, User
@@ -55,7 +56,11 @@ async def callback_server_management(
     if not servers:
         text += _("server_management:message:empty")
 
-    await callback.message.edit_text(text=text, reply_markup=servers_keyboard(servers))
+    await edit_admin_message(
+        callback=callback,
+        text=text,
+        reply_markup=servers_keyboard(servers),
+    )
 
 
 @router.callback_query(F.data == NavAdminTools.SYNC_SERVERS, IsDev())

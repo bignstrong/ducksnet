@@ -18,6 +18,7 @@ from app.bot.utils.constants import (
     NOTIFICATION_PRE_MESSAGE_TEXT_KEY,
 )
 from app.bot.utils.navigation import NavAdminTools
+from app.bot.utils.admin_messaging import edit_admin_message
 from app.bot.utils.validation import is_valid_message_text, is_valid_user_id
 from app.db.models import User
 
@@ -56,7 +57,11 @@ async def callback_send_notification(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification.")
-    await show_notification_main(message=callback.message, state=state)
+    await edit_admin_message(
+        callback=callback,
+        text=_("notification:message:main"),
+        reply_markup=notification_keyboard(),
+    )
 
 
 @router.callback_query(F.data == NavAdminTools.SEND_NOTIFICATION_USER, IsAdmin())
