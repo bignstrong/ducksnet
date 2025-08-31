@@ -18,7 +18,7 @@ from app.bot.utils.constants import (
     NOTIFICATION_PRE_MESSAGE_TEXT_KEY,
 )
 from app.bot.utils.navigation import NavAdminTools
-from app.bot.utils.admin_messaging import edit_admin_message
+from app.bot.utils.admin_messaging import edit_admin_message, edit_admin_message_by_id
 from app.bot.utils.validation import is_valid_message_text, is_valid_user_id
 from app.db.models import User
 
@@ -42,10 +42,10 @@ class NotificationStates(StatesGroup):
 async def show_notification_main(message: Message, state: FSMContext) -> None:
     await state.set_state(None)
     main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-    await message.bot.edit_message_text(
-        text=_("notification:message:main"),
-        chat_id=message.chat.id,
+    await edit_admin_message_by_id(
+        message=message,
         message_id=main_message_id,
+        text=_("notification:message:main"),
         reply_markup=notification_keyboard(),
     )
 
@@ -71,7 +71,8 @@ async def callback_send_notification_user(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification to user.")
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("notification:message:send_to_user"),
         reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
     )
@@ -99,13 +100,13 @@ async def message_user_id(
             await state.update_data({NOTIFICATION_CHAT_IDS_KEY: [user_id]})
             main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
             await state.set_state(NotificationStates.message_to_user)
-            await message.bot.edit_message_text(
+            await edit_admin_message_by_id(
+                message=message,
+                message_id=main_message_id,
                 text=_("notification:message:send_message_for_user").format(
                     user_id=user_id,
                     first_name=user.first_name,
                 ),
-                chat_id=message.chat.id,
-                message_id=main_message_id,
                 reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
             )
         else:
@@ -137,10 +138,10 @@ async def message_to_user(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
+        await edit_admin_message_by_id(
+            message=message,
             message_id=main_message_id,
+            text=_("notification:message:confirm_send_notification").format(text=text),
             reply_markup=confirm_send_notification_keyboard(),
         )
     else:
@@ -200,7 +201,8 @@ async def callback_send_notification_all(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened send notification to all.")
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("notification:message:send_to_all"),
         reply_markup=back_keyboard(NavAdminTools.NOTIFICATION),
     )
@@ -221,10 +223,10 @@ async def message_to_all(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
+        await edit_admin_message_by_id(
+            message=message,
             message_id=main_message_id,
+            text=_("notification:message:confirm_send_notification").format(text=text),
             reply_markup=confirm_send_notification_keyboard(),
         )
     else:
@@ -301,7 +303,8 @@ async def callback_last_notification(
     user_ids = await state.get_value(NOTIFICATION_CHAT_IDS_KEY)
     message_text = await state.get_value(NOTIFICATION_MESSAGE_TEXT_KEY)
     if user_ids and len(user_ids) > 0:
-        await callback.message.edit_text(
+        await edit_admin_message(
+            callback=callback,
             text=_("notification:message:last_notification").format(
                 message_count=len(user_ids),
                 message_text=message_text,
@@ -323,7 +326,8 @@ async def callback_edit_notification(
     state: FSMContext,
 ) -> None:
     logger.info(f"Admin {user.tg_id} opened edit notification.")
-    await callback.message.edit_text(
+    await edit_admin_message(
+        callback=callback,
         text=_("notification:message:edit_notification"),
         reply_markup=back_keyboard(NavAdminTools.LAST_NOTIFICATION),
     )
@@ -343,10 +347,10 @@ async def message_edit(
     if is_valid_message_text(text):
         await state.update_data({NOTIFICATION_PRE_MESSAGE_TEXT_KEY: text})
         main_message_id = await state.get_value(MAIN_MESSAGE_ID_KEY)
-        await message.bot.edit_message_text(
-            text=_("notification:message:confirm_send_notification").format(text=text),
-            chat_id=message.chat.id,
+        await edit_admin_message_by_id(
+            message=message,
             message_id=main_message_id,
+            text=_("notification:message:confirm_send_notification").format(text=text),
             reply_markup=confirm_send_notification_keyboard(),
         )
     else:
