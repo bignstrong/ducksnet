@@ -1,28 +1,62 @@
 import logging
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, FSInputFile, InputMediaPhoto
 from aiogram.utils.i18n import gettext as _
 
 from app.bot.filters import IsAdmin, IsDev
 from app.bot.services import ServicesContainer
 from app.bot.utils.navigation import NavAdminTools
 from app.db.models import User
+from app.config import DEFAULT_DATA_DIR
 
 from .keyboard import admin_tools_keyboard
 
 logger = logging.getLogger(__name__)
 router = Router(name=__name__)
 
+# Путь к картинке админ-панели
+ADMIN_IMAGE_PATH = DEFAULT_DATA_DIR / "images" / "AdminPanel.png"
+
 
 @router.callback_query(F.data == NavAdminTools.MAIN, IsAdmin())
 async def callback_admin_tools(callback: CallbackQuery, user: User) -> None:
     logger.info(f"Admin {user.tg_id} opened admin tools.")
     is_dev = await IsDev()(user_id=user.tg_id)
-    await callback.message.edit_text(
-        text=_("admin_tools:message:main"),
-        reply_markup=admin_tools_keyboard(is_dev),
-    )
+    
+    try:
+        # Пытаемся заменить картинку и текст
+        if ADMIN_IMAGE_PATH.exists():
+            photo = FSInputFile(ADMIN_IMAGE_PATH)
+            media = InputMediaPhoto(
+                media=photo, 
+                caption=_("admin_tools:message:main")
+            )
+            await callback.message.edit_media(
+                media=media,
+                reply_markup=admin_tools_keyboard(is_dev),
+            )
+        else:
+            # Если картинки нет, редактируем только подпись
+            await callback.message.edit_caption(
+                caption=_("admin_tools:message:main"),
+                reply_markup=admin_tools_keyboard(is_dev),
+            )
+    except Exception as e:
+        logger.warning(f"Failed to edit admin message: {e}")
+        # Fallback - отправляем новое сообщение
+        if ADMIN_IMAGE_PATH.exists():
+            photo = FSInputFile(ADMIN_IMAGE_PATH)
+            await callback.message.answer_photo(
+                photo=photo,
+                caption=_("admin_tools:message:main"),
+                reply_markup=admin_tools_keyboard(is_dev),
+            )
+        else:
+            await callback.message.answer(
+                text=_("admin_tools:message:main"),
+                reply_markup=admin_tools_keyboard(is_dev),
+            )
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
